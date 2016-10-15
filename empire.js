@@ -90,24 +90,37 @@ function pythagorean(x, y) {
 }
 
 function whenReady() {
-	if (!_[me().type]) return
+	console.log('I am %s', me().type);
+	var cmds = _[me().type]
+	if (!cmds.length) return
 
-	switch (me().type) {
-		case 'infantryBot':
-			attack()
-			break
-		case 'rocketBot':
-			var infantryLen = targetPosition(null,null,4).fireDistance
-			var myLen = targetPosition().fireDistance
-			var wait = infantryLen / 2 - myLen / me().speed
-		  timeout(wait).then(attack)
-			break
+	var cmd = cmds.shift()
+	console.log('CMD:', cmd);
+
+	if (Array.isArray(cmd)) {
+		client.doMoves(cmd)
+		client.whenIdle().then(whenReady)
+	} else {
+		if (cmd === 'auto') {
+			cmds.push(cmd)
+		}
+		switch (me().type) {
+			case 'infantryBot':
+				attack(cmd)
+				break
+			case 'rocketBot':
+				var infantryLen = targetPosition(null,null,4).fireDistance
+				var myLen = targetPosition().fireDistance
+				var wait = infantryLen / 2 - myLen / me().speed
+				console.log('wait %ds', wait);
+				timeout(wait).then(
+					() => {
+						attack(cmd)
+					}
+				)
+				break
+		}
 	}
-
-	console.log(
-		'EST',
-		targetPosition().distance - targetPosition().fireDistance
-	);
 }
 
 function me() {
@@ -122,7 +135,7 @@ function info(id) {
 	return client.askItemInfo(id)
 }
 
-function position() {
+function position(path) {
 	var x = {
 		min: 20.25,
 		max: 39.9,
@@ -132,65 +145,78 @@ function position() {
 		max: 39.75,
 	}
 
-	if (_.target === undefined) {
-		str = me().coordinates[1] > y.max / 2 ? 'LT' : 'RT'
+	if (path === 'LR') {
+		path = me().coordinates[1] > y.max / 2 ? 'LT' : 'RT'
 	}
 
-	switch (_.target) {
+	switch (path) {
 		case 'LT':
-			return [
+			path = [
 				[x.max,y.max],
 				[x.min,y.max],
 			]
+			break
 		case 'L':
-			return [
+			path = [
 				[x.max,y.max],
 			]
+			break
 		case 'RT':
-			return [
+			path = [
 				[x.max,y.min],
 				[x.min,y.min],
 			]
+			break
 		case 'R':
-			return [
+			path = [
 				[x.max,y.min],
 			]
-		default:
-			return _.target
+			break
 	}
+
+	if (!path) {
+		path = [me().coordinates]
+	}
+
+	return path
 }
 
-function attack() {
-	var target = client.askNearestEnemy(_.enemies)
-	if (me().level >= 4) {
-		// rocket able to atk center, other can stop
-	}
-	if (target.type === 'machineGun') {
-		if (me().type === 'infantryBot') {
-			return client.whenItemDestroyed(target.id).then(whenReady)
+function attack(role) {
+	var target = client.askNearestEnemy(role === 'auto' ? _.enemies : [role])
+	if (me().type === 'infantryBot') {
+		switch (target.type) {
+			case 'commandCenter':
+				return
+			case 'machineGun':
+				return client.whenItemDestroyed(target.id).then(whenReady)
 		}
 	}
 
-//	client.doMove(targetPosition().fireCoordinates)
+	console.log('Target is %s%d', target.type, target.id);
+	console.log(
+		'Est fire distance:',
+		targetPosition().distance - targetPosition().fireDistance
+	);
+
+	if (me().type === 'rocketBot' && target.type === 'commandCenter') {
+		console.log('lv4 doMessage("rocket able to atk center, other can stop")');
+	}
 
 	client.doAttack(target.id)
 
-	if (!_.once || me().type === 'rocketBot') {
-		client.whenItemDestroyed(target.id).then(whenReady)
-	}
+	client.whenItemDestroyed(target.id).then(whenReady)
 
-	client.whenEnemyInRange().then( r => { 
+	client.whenEnemyInRange().then( r => {
 		var target = client.askItemInfo(r.id)
 		console.log(
-			'act',
+			'Enemy %d in range: %d',
+			target.id,
 			targetPosition(null,target.coordinates).distance
 		);
 	})
 }
 
 
-_.target = 'LT'
-_.once = !false
 _.enemies = [
 	ROLE.CENTER,
 	ROLE.TOWER,
@@ -199,18 +225,11 @@ _.enemies = [
 	//ROLE.OBSTACLE,
 	//ROLE.ALL,
 ]
-_.infantryBot = true
-_.rocketBot = true
-
-client.doMoves(position())
+_.infantryBot = [
+	'auto',
+]
+_.rocketBot = [
+	'auto',
+]
+client.doMoves(position('RT')) // this will effect isReady(), don't put in cmds
 client.whenIdle().then(whenIdle)
-
-/* dead code
-client.whenItemInArea(client.askCenter().coordinates, me.firing_range).then(
-	(a,b,c) => {
-		console.log('=====');
-		console.log('inArea',a,b,c);
-		console.log('-----');
-	}
-)
-*/
