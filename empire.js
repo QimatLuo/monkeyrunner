@@ -8,9 +8,9 @@ var _ = {}
 function whenIdle() {
 	if (isReady()) {
 		if (me().level >= 2) {
-			time(1).then(whenTogether)
+			timeout(1).then(whenReady) // to avoid the latest idle case
 		} else {
-			whenTogether()
+			whenReady()
 		}
 	} else {
 		client.whenIdle().then(whenIdle)
@@ -18,14 +18,96 @@ function whenIdle() {
 }
 
 function isReady() {
-	if (client.askCurTime() < 10) return
+	if (client.askCurTime() < 10) return // avoid init only 1 client then ready
 
+	/* not use === 'idle' is because lastest one just idle, but other bot alreay moved
+	 * then idle bot will wait unitl other bot attacking, state will change to others
+	 * so this idle bot can go next step
+	 */
 	return team()
-		.every( item => item.state.action !== 'move')
+		.every( item => item.state.action !== 'move') 
 }
 
-function time(sec) {
-	return client.whenTime(client.askCurTime() + sec)
+function timeout(sec) {
+	if (me().level < 2) {
+		var pos = me().coordinates
+		var x = pos[0]
+		var y = pos[1]
+		var r = sec * me().speed / 2
+
+		if (x < 30 && y > 20) {
+			y -= r
+		} else if (x > 30 && y > 20) {
+			x -= r
+		} else if (x > 30 && y < 20) {
+			x -= r
+		} else if (x < 30 && y < 20) {
+			y += r
+		}
+
+		client.doMoves([
+			[x,y],
+			pos,
+		])
+		return client.whenIdle()
+	} else {
+		return client.whenTime(client.askCurTime() + sec)
+	}
+}
+
+function targetPosition(from, to, r) {
+	if (!from) {
+		from = me().coordinates
+	}
+	if (!to) {
+		to = client.askNearestEnemy(_.enemies).coordinates
+	}
+	if (!r) {
+		r = me().firing_range
+	}
+
+	var x = from[0] - to[0]
+	var y = from[1] - to[1]
+	var z = pythagorean(x, y)
+	var fireDistance = z - r
+	var scale = z / fireDistance
+
+	return {
+		fireCoordinates: [
+			from[0] - x / scale,
+			from[1] - y / scale,
+		],
+		distance: z,
+		fireDistance: fireDistance,
+	}
+}
+
+function pythagorean(x, y) {
+	return Math.pow(
+		x*x + y*y,
+		0.5
+	)
+}
+
+function whenReady() {
+	if (!_[me().type]) return
+
+	switch (me().type) {
+		case 'infantryBot':
+			attack()
+			break
+		case 'rocketBot':
+			var infantryLen = targetPosition(null,null,4).fireDistance
+			var myLen = targetPosition().fireDistance
+			var wait = infantryLen / 2 - myLen / me().speed
+		  timeout(wait).then(attack)
+			break
+	}
+
+	console.log(
+		'EST',
+		targetPosition().distance - targetPosition().fireDistance
+	);
 }
 
 function me() {
@@ -40,90 +122,12 @@ function info(id) {
 	return client.askItemInfo(id)
 }
 
-function attackNearest() {
-	let enemies = client.askTowers()
-	enemies.push(client.askCenter())
-	enemies.sort(
-		(a, b) => {
-			return distance(a) - distance(b)
-		}
-	)
-	let target = enemies[0]
-
-	client.doAttack(target.id)
-	client.whenItemDestroyed(target.id).then(attackNearest)
-}
-
-function distance(item) {
-	let x = Math.abs(item.coordinates[0] - me().coordinates[0])
-	let y = Math.abs(item.coordinates[1] - me().coordinates[1])
-
-	return Math.pow((x*x + y*y), 0.5)
-}
-
-function attackCenter() {
-	let target = client.askCenter()
-	client.doAttack(target.id)
-
-	let targetPos = targetPosition(
-		me().coordinates,
-		target.coordinates
-	)
-	console.log(targetPos)
-
-	let tower = client.askNearestEnemy([ROLE.TOWER])
-	let towerPos = tower.coordinates
-	let x =	targetPos[0] - towerPos[0]
-	let y =	targetPos[1] - towerPos[1]
-	let z = Math.pow(x*x + y*y, 0.5)
-	if (z > tower.firing_range) {
-		console.log('safe')
-	} else {
-		console.log('unsafe')
-	}
-	client.whenEnemyInRange(target.id).then(
-		(r) => {
-			console.log(r)
-			console.log(me().coordinates)
-		}
-	)
-}
-
-function fakeTimeout(sec) {
-	let pos = me().coordinates
-	let x = pos[0]
-	let y = pos[1]
-
-	if (x < 30 && y > 20) {
-		y -= sec
-	} else if (x > 30 && y > 20) {
-		x -= sec
-	} else if (x > 30 && y < 20) {
-		x -= sec
-	} else if (x < 30 && y < 20) {
-		y += sec
-	}
-
-	client.doMoves([
-		[x,y],
-		pos,
-	])
-}
-
-function attack() {
-	if (_.center) {
-		attackCenter()
-	} else {
-		attackNearest()
-	}
-}
-
-function position(str) {
-	let x = {
+function position() {
+	var x = {
 		min: 20.25,
 		max: 39.9,
 	}
-	let y = {
+	var y = {
 		min: 0,
 		max: 39.75,
 	}
@@ -156,48 +160,57 @@ function position(str) {
 	}
 }
 
-function targetPosition(from, to) {
-	console.log(from, to)
-	let x = from[0] - to[0]
-	let y = from[1] - to[1]
-	let z = pythagorean(x, y)
-	let scale = z / (z - me().firing_range)
-	return [
-		from[0] - x / scale,
-		from[1] - y / scale,
-	]
-}
-
-function pythagorean(x, y) {
-	return Math.pow(
-		x*x + y*y,
-		0.5
-	)
-}
-
-function whenTogether() {
-	if (!_[me().type]) return
-
-	switch (me().type) {
-		case 'infantryBot':
-			attack()
-			break
-		case 'rocketBot':
-			if (me().level >= 2) {
-				time(1).then(attack)
-			} else {
-				fakeTimeout(5)
-				client.whenIdle().then(attack)
-			}
-			break
+function attack() {
+	var target = client.askNearestEnemy(_.enemies)
+	if (me().level >= 4) {
+		// rocket able to atk center, other can stop
 	}
+	if (target.type === 'machineGun') {
+		if (me().type === 'infantryBot') {
+			return client.whenItemDestroyed(target.id).then(whenReady)
+		}
+	}
+
+//	client.doMove(targetPosition().fireCoordinates)
+
+	client.doAttack(target.id)
+
+	if (!_.once || me().type === 'rocketBot') {
+		client.whenItemDestroyed(target.id).then(whenReady)
+	}
+
+	client.whenEnemyInRange().then( r => { 
+		var target = client.askItemInfo(r.id)
+		console.log(
+			'act',
+			targetPosition(null,target.coordinates).distance
+		);
+	})
 }
+
 
 _.target = 'LT'
-_.center = true
+_.once = !false
+_.enemies = [
+	ROLE.CENTER,
+	ROLE.TOWER,
+	//ROLE.UNIT,
+	//ROLE.BUILDING,
+	//ROLE.OBSTACLE,
+	//ROLE.ALL,
+]
 _.infantryBot = true
 _.rocketBot = true
 
 client.doMoves(position())
 client.whenIdle().then(whenIdle)
-	console.log(me().speed)
+
+/* dead code
+client.whenItemInArea(client.askCenter().coordinates, me.firing_range).then(
+	(a,b,c) => {
+		console.log('=====');
+		console.log('inArea',a,b,c);
+		console.log('-----');
+	}
+)
+*/
