@@ -190,8 +190,21 @@ function position(path) {
 	return path
 }
 
+function isSafe(pos) {
+	return !client.askTowers().some(
+		tower => {
+			var pos2tower = targetPosition(pos, tower.coordinates)
+			return pos2tower.distance <= tower.firing_range
+		}
+	)
+}
+
 function attack(role) {
 	var target = client.askNearestEnemy(role === 'auto' ? _.enemies : [role])
+	var me2target = targetPosition(null, target.coordinates)
+	console.log(
+		isSafe(me2target.fireCoordinates)
+	)
 	if (me().type === 'infantryBot') {
 		switch (target.type) {
 			case 'commandCenter':
