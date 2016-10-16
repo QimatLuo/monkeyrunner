@@ -216,10 +216,6 @@ function attack(role) {
 	}
 
 	console.log('Target is %s%d', target.type, target.id);
-	console.log(
-		'Est fire distance:',
-		targetPosition().distance - targetPosition().fireDistance
-	);
 
 	if (me().type === 'rocketBot' && target.type === 'commandCenter') {
 		console.log('lv4 doMessage("rocket able to atk center, other can stop")');
@@ -230,12 +226,6 @@ function attack(role) {
 	client.whenItemDestroyed(target.id).then(whenReady)
 
 	client.whenEnemyInRange().then( r => {
-		var target = client.askItemInfo(r.id)
-		console.log(
-			'Enemy %d in range: %d',
-			target.id,
-			targetPosition(null,target.coordinates).distance
-		);
 	})
 }
 
