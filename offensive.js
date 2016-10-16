@@ -3,7 +3,9 @@
 var Client = require('battle/commander.js').Client;
 var ROLE = require("battle/terms.js").ROLE;
 var client = new Client();
-var _ = {}
+var _ = {
+	pathHistory: [],
+}
 
 function whenIdle() {
 	if (isReady()) {
@@ -45,14 +47,22 @@ function timeout(sec) {
 			y += r
 		}
 
-		client.doMoves([
-			[x,y],
-			pos,
-		])
+		client.doMoves([ [x,y], pos ]) // don't use go(), this is fake move
 		return client.whenIdle()
 	} else {
 		return client.whenTime(client.askCurTime() + sec)
 	}
+}
+
+function back(n) {
+	n = n || 1
+	var path = _.pathHistory.splice(_.pathHistory.length - n)
+	client.doMoves(path.reverse())
+}
+
+function go(path) {
+	_.pathHistory = _.pathHistory.concat(path)
+	client.doMoves(path)
 }
 
 function targetPosition(from, to, r) {
@@ -98,7 +108,7 @@ function whenReady() {
 	console.log('CMD:', cmd);
 
 	if (Array.isArray(cmd)) {
-		client.doMoves(cmd)
+		go(cmd)
 		client.whenIdle().then(whenReady)
 	} else {
 		if (cmd === 'auto') {
@@ -186,6 +196,7 @@ function attack(role) {
 	if (me().type === 'infantryBot') {
 		switch (target.type) {
 			case 'commandCenter':
+				back(9)
 				return
 			case 'machineGun':
 				return client.whenItemDestroyed(target.id).then(whenReady)
@@ -231,5 +242,5 @@ _.infantryBot = [
 _.rocketBot = [
 	'auto',
 ]
-client.doMoves(position('RT')) // this will effect isReady(), don't put in cmds
+go(position('RT')) // this will effect isReady(), don't put in cmds
 client.whenIdle().then(whenIdle)
