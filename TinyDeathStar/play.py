@@ -273,6 +273,7 @@ class TinyDeathStar:
 
     def action_vip(self):
         self.util.click('no')
+        return True
         self.util.click('yes')
         img = self.device.takeSnapshot()
         for name in ['bigSpender','celebrity','levelMover','recruitingOfficer','supplyOfficer','upgrader']:
