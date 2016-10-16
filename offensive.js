@@ -113,22 +113,30 @@ function whenReady() {
 		if (cmd === 'auto') {
 			cmds.push(cmd)
 		}
+
+		var target = findTarget()
 		switch (me().type) {
 			case 'infantryBot':
-				attack(cmd)
+				attack(target)
 				break
 			case 'rocketBot':
-				var infantryLen = targetPosition(null,null,4).fireDistance
-				var myLen = targetPosition().fireDistance
-				var wait = infantryLen / 2 - myLen / me().speed
-				console.log('wait %ds', wait);
-				timeout(wait).then(
-					() => {
-						attack(cmd)
-					}
-				)
+				if (target.type === 'commandCenter') {
+					attack(target)
+				} else {
+					var infantryLen = targetPosition(null,null,4).fireDistance
+					var myLen = targetPosition().fireDistance
+					var wait = infantryLen / 2 - myLen / me().speed
+					wait += 1
+					console.log('wait %ds', wait);
+					timeout(wait).then(
+						() => {
+							attack(target)
+						}
+					)
+				}
 				break
 		}
+		client.whenItemDestroyed(target.id).then(whenReady)
 	}
 }
 
@@ -210,29 +218,31 @@ function findTarget() {
 	return target
 }
 
-function attack() {
-	var target = findTarget()
-	if (me().type === 'infantryBot') {
-		switch (target.type) {
-			case 'commandCenter':
-				back()
-				return
-			case 'machineGun':
-				return client.whenItemDestroyed(target.id).then(whenReady)
-		}
+function attack(target) {
+	switch (me().type) {
+		case 'infantryBot':
+			switch (target.type) {
+				case 'commandCenter':
+					// To do: help atk center at key time
+					// back()
+					break
+				case 'machineGun':
+					return
+			}
+			break
+		case 'rocketBot':
+			switch (target.type) {
+				case 'commandCenter':
+					console.log('lv4 doMessage("rocket able to atk center, other can stop")');
+					break
+			}
+			break
 	}
-
-
-	if (me().type === 'rocketBot' && target.type === 'commandCenter') {
-		console.log('lv4 doMessage("rocket able to atk center, other can stop")');
-	}
-
-	client.doAttack(target.id)
-
-	client.whenItemDestroyed(target.id).then(whenReady)
 
 	client.whenEnemyInRange().then( r => {
 	})
+
+	client.doAttack(target.id)
 }
 
 
