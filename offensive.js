@@ -190,21 +190,28 @@ function position(path) {
 	return path
 }
 
-function isSafe(pos) {
-	return !client.askTowers().some(
+function findTarget() {
+	var target = client.askNearestEnemy( _.enemies)
+	console.log('Target is %s%d', target.type, target.id);
+	if (target.type !== 'commandCenter') return target
+
+	var rocketRange = 8
+	var me2target = targetPosition(null, null, rocketRange)
+	var unSafe = client.askTowers().some(
 		tower => {
-			var pos2tower = targetPosition(pos, tower.coordinates)
+			var pos2tower = targetPosition(me2target.fireCoordinates, tower.coordinates)
 			return pos2tower.distance <= tower.firing_range
 		}
 	)
+	if (unSafe) {
+		target = client.askNearestEnemy([ROLE.TOWER])
+		console.log('Chante target %s%d', target.type, target.id);
+	}
+	return target
 }
 
-function attack(role) {
-	var target = client.askNearestEnemy(role === 'auto' ? _.enemies : [role])
-	var me2target = targetPosition(null, target.coordinates)
-	console.log(
-		isSafe(me2target.fireCoordinates)
-	)
+function attack() {
+	var target = findTarget()
 	if (me().type === 'infantryBot') {
 		switch (target.type) {
 			case 'commandCenter':
@@ -215,7 +222,6 @@ function attack(role) {
 		}
 	}
 
-	console.log('Target is %s%d', target.type, target.id);
 
 	if (me().type === 'rocketBot' && target.type === 'commandCenter') {
 		console.log('lv4 doMessage("rocket able to atk center, other can stop")');
