@@ -54,10 +54,9 @@ function timeout(sec) {
 	}
 }
 
-function back(n) {
-	n = n || 1
-	var path = _.pathHistory.splice(_.pathHistory.length - n)
-	client.doMoves(path.reverse())
+function back() {
+	var last2me = targetPosition(_.pathHistory.pop(), me().coordinates)
+	client.doMove(last2me.fireCoordinates)
 }
 
 function go(path) {
@@ -196,7 +195,7 @@ function attack(role) {
 	if (me().type === 'infantryBot') {
 		switch (target.type) {
 			case 'commandCenter':
-				back(9)
+				back()
 				return
 			case 'machineGun':
 				return client.whenItemDestroyed(target.id).then(whenReady)
