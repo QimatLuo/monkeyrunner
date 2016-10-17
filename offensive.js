@@ -5,6 +5,7 @@ var ROLE = require("battle/terms.js").ROLE;
 var client = new Client();
 var _ = {
 	askMyInfo: client.askMyInfo(),
+	logs: [],
 	pathHistory: [],
 }
 
@@ -29,6 +30,12 @@ function isReady() {
 	 */
 	return team()
 		.every( item => item.state.action !== 'move') 
+}
+
+function printLogs() {
+	if (_.logs.length) {
+		console.log.apply(null, _.logs.splice(0))
+	}
 }
 
 function timeout(sec) {
@@ -56,7 +63,8 @@ function timeout(sec) {
 }
 
 function back() {
-	console.log('back')
+	_.logs.push('back')
+	printLogs()
 	var last2me = targetPosition(_.pathHistory.pop(), me('coordinates'))
 	client.doMove(last2me.fireCoordinates)
 }
@@ -101,12 +109,12 @@ function pythagorean(x, y) {
 }
 
 function whenReady() {
-	console.log('I am %s', me('type'));
+	_.logs.push('I am ' +  me('type'))
 	var cmds = _[me('type')]
 	if (!cmds.length) return
 
 	var cmd = cmds.shift()
-	console.log('CMD:', cmd);
+	_.logs.push('CMD: ' + cmd)
 
 	if (Array.isArray(cmd)) {
 		go(cmd)
@@ -128,7 +136,8 @@ function whenReady() {
 					var infantryLen = targetPosition(null,null,4).fireDistance
 					var myLen = targetPosition().fireDistance
 					var wait = infantryLen / 2 - myLen / me('speed')
-					console.log('wait %ds', wait);
+					_.logs.push('wait ' + wait + 's')
+					printLogs()
 					timeout(wait).then(
 						() => {
 							attack(target)
@@ -204,7 +213,7 @@ function position(path) {
 
 function findTarget() {
 	var target = client.askNearestEnemy( _.enemies)
-	console.log('Target is %s%d', target.type, target.id);
+	_.logs.push('Target is ' + target.type + target.id)
 	if (target.type !== 'commandCenter') return target
 
 	var rocketRange = 8
@@ -217,7 +226,7 @@ function findTarget() {
 	)
 	if (unSafe) {
 		target = client.askNearestEnemy([ROLE.TOWER])
-		console.log('Chante target %s%d', target.type, target.id);
+		_.logs.push('Chante target ' + target.type + target.id)
 	}
 	return target
 }
@@ -237,7 +246,7 @@ function attack(target) {
 		case 'rocketBot':
 			switch (target.type) {
 				case 'commandCenter':
-					console.log('lv4 doMessage("rocket able to atk center, other can stop")');
+					_.logs.push('lv4 doMessage("rocket able to atk center, other can stop")')
 					break
 			}
 			break
@@ -247,9 +256,11 @@ function attack(target) {
 	})
 
 	if (info(target.id).is_dead) {
-		console.log('%s%d is dead', target.type, target.id)
+		_.logs.push(target.type + target.id + ' is dead')
+		printLogs()
 		client.whenIdle().then(whenReady)
 	} else {
+		printLogs()
 		client.doAttack(target.id)
 	}
 }
