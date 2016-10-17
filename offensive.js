@@ -130,7 +130,10 @@ function whenReady() {
 				attack(target)
 				break
 			case 'rocketBot':
-				if (target.type === 'commandCenter') {
+				if (
+					target.type === 'commandCenter' ||
+					target.type === 'machineGun'
+				) {
 					attack(target)
 				} else {
 					var infantryLen = targetPosition(null,null,4).fireDistance
