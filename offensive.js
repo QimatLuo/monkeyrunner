@@ -248,6 +248,7 @@ function attack(target) {
 	})
 
 	if (info(target.id).is_dead) {
+		console.log('%s%d is dead', target.type, target.id)
 		client.whenIdle().then(whenReady)
 	} else {
 		client.doAttack(target.id)
