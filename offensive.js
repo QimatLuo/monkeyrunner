@@ -4,12 +4,13 @@ var Client = require('battle/commander.js').Client;
 var ROLE = require("battle/terms.js").ROLE;
 var client = new Client();
 var _ = {
+	askMyInfo: client.askMyInfo(),
 	pathHistory: [],
 }
 
 function whenIdle() {
 	if (isReady()) {
-		if (me().level >= 2) {
+		if (me('level') >= 2) {
 			timeout(1).then(whenReady) // to avoid the latest idle case
 		} else {
 			whenReady()
@@ -31,11 +32,11 @@ function isReady() {
 }
 
 function timeout(sec) {
-	if (me().level < 2) {
-		var pos = me().coordinates
+	if (me('level') < 2) {
+		var pos = me('coordinates')
 		var x = pos[0]
 		var y = pos[1]
-		var r = sec * me().speed / 2
+		var r = sec * me('speed') / 2
 
 		if (x < 30 && y > 20) {
 			y -= r
@@ -56,7 +57,7 @@ function timeout(sec) {
 
 function back() {
 	console.log('back')
-	var last2me = targetPosition(_.pathHistory.pop(), me().coordinates)
+	var last2me = targetPosition(_.pathHistory.pop(), me('coordinates'))
 	client.doMove(last2me.fireCoordinates)
 }
 
@@ -67,13 +68,13 @@ function go(path) {
 
 function targetPosition(from, to, r) {
 	if (!from) {
-		from = me().coordinates
+		from = me('coordinates')
 	}
 	if (!to) {
 		to = client.askNearestEnemy(_.enemies).coordinates
 	}
 	if (!r) {
-		r = me().firing_range
+		r = me('firing_range')
 	}
 
 	var x = from[0] - to[0]
@@ -100,8 +101,8 @@ function pythagorean(x, y) {
 }
 
 function whenReady() {
-	console.log('I am %s', me().type);
-	var cmds = _[me().type]
+	console.log('I am %s', me('type'));
+	var cmds = _[me('type')]
 	if (!cmds.length) return
 
 	var cmd = cmds.shift()
@@ -116,7 +117,7 @@ function whenReady() {
 		}
 
 		var target = findTarget()
-		switch (me().type) {
+		switch (me('type')) {
 			case 'infantryBot':
 				attack(target)
 				break
@@ -126,7 +127,7 @@ function whenReady() {
 				} else {
 					var infantryLen = targetPosition(null,null,4).fireDistance
 					var myLen = targetPosition().fireDistance
-					var wait = infantryLen / 2 - myLen / me().speed
+					var wait = infantryLen / 2 - myLen / me('speed')
 					wait += 1
 					console.log('wait %ds', wait);
 					timeout(wait).then(
@@ -141,8 +142,11 @@ function whenReady() {
 	}
 }
 
-function me() {
-	return client.askMyInfo()
+function me(attr) {
+	if (attr === 'coordinates') {
+		_.askMyInfo = client.askMyInfo()
+	}
+	return _.askMyInfo[attr]
 }
 
 function team() {
@@ -164,7 +168,7 @@ function position(path) {
 	}
 
 	if (path === 'LR') {
-		path = me().coordinates[1] > y.max / 2 ? 'LT' : 'RT'
+		path = me('coordinates')[1] > y.max / 2 ? 'LT' : 'RT'
 	}
 
 	switch (path) {
@@ -193,7 +197,7 @@ function position(path) {
 	}
 
 	if (!path) {
-		path = [me().coordinates]
+		path = [me('coordinates')]
 	}
 
 	return path
@@ -220,7 +224,7 @@ function findTarget() {
 }
 
 function attack(target) {
-	switch (me().type) {
+	switch (me('type')) {
 		case 'infantryBot':
 			switch (target.type) {
 				case 'commandCenter':
