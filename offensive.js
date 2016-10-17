@@ -128,7 +128,6 @@ function whenReady() {
 					var infantryLen = targetPosition(null,null,4).fireDistance
 					var myLen = targetPosition().fireDistance
 					var wait = infantryLen / 2 - myLen / me('speed')
-					wait += 1
 					console.log('wait %ds', wait);
 					timeout(wait).then(
 						() => {
