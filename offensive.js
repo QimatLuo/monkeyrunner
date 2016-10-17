@@ -55,6 +55,7 @@ function timeout(sec) {
 }
 
 function back() {
+	console.log('back')
 	var last2me = targetPosition(_.pathHistory.pop(), me().coordinates)
 	client.doMove(last2me.fireCoordinates)
 }
@@ -224,9 +225,9 @@ function attack(target) {
 			switch (target.type) {
 				case 'commandCenter':
 					// To do: help atk center at key time
-					// back()
 					break
 				case 'machineGun':
+					back()
 					return
 			}
 			break
@@ -242,7 +243,11 @@ function attack(target) {
 	client.whenEnemyInRange().then( r => {
 	})
 
-	client.doAttack(target.id)
+	if (info(target.id).is_dead) {
+		client.whenIdle().then(whenReady)
+	} else {
+		client.doAttack(target.id)
+	}
 }
 
 
