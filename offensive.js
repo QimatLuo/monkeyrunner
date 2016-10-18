@@ -160,8 +160,21 @@ function me(attr) {
 	return _.askMyInfo[attr]
 }
 
-function team() {
-	return client.askMyItems()
+function team(type) {
+	if (type) {
+		var output
+		client.askMyItems().some(
+			item => {
+				if (item.type === type) {
+					output = item
+					return true
+				}
+			}
+		)
+		return output
+	} else {
+		return client.askMyItems()
+	}
 }
 
 function info(id) {
