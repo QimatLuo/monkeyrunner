@@ -63,10 +63,18 @@ function timeout(sec) {
 }
 
 function back() {
-	_.logs.push('back')
+	var rocket = team('rocketBot')
+
+	if (rocket) {
+		client.doMove(rocket.coordinates)
+		_.logs.push('back to rockets')
+	} else {
+		var last2me = targetPosition(_.pathHistory.pop(), me('coordinates'))
+		_.logs.push('back to last pos')
+		client.doMove(last2me.fireCoordinates)
+	}
+
 	printLogs()
-	var last2me = targetPosition(_.pathHistory.pop(), me('coordinates'))
-	client.doMove(last2me.fireCoordinates)
 }
 
 function go(path) {
