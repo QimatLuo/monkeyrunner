@@ -211,11 +211,13 @@ function position(path) {
 			break
 		case 'CC':
 			path = [
+				[x.max,y.max/2],
 				[(x.min + x.max)/2,y.max/2],
 			]
 			break
 		case 'CT':
 			path = [
+				[x.max,y.max/2],
 				[x.min,y.max/2],
 			]
 			break
