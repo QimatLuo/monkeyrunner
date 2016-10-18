@@ -136,7 +136,7 @@ function whenReady() {
 				) {
 					attack(target)
 				} else {
-					var infantryLen = targetPosition(null,null,4).fireDistance
+					var infantryLen = targetPosition(team('infantryBot').coordinates,null,4).fireDistance
 					var myLen = targetPosition().fireDistance
 					var wait = infantryLen / 2 - myLen / me('speed')
 					_.logs.push('wait ' + wait + 's')
