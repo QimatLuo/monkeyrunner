@@ -191,12 +191,12 @@ function info(id) {
 
 function position(path) {
 	var x = {
-		min: 20.25,
-		max: 39.9,
+		min: 20,
+		max: 40,
 	}
 	var y = {
 		min: 0,
-		max: 39.75,
+		max: 40,
 	}
 
 	if (path === 'LR') {
@@ -204,6 +204,21 @@ function position(path) {
 	}
 
 	switch (path) {
+		case 'C':
+			path = [
+				[x.max,y.max/2],
+			]
+			break
+		case 'CC':
+			path = [
+				[(x.min + x.max)/2,y.max/2],
+			]
+			break
+		case 'CT':
+			path = [
+				[x.min,y.max/2],
+			]
+			break
 		case 'LT':
 			path = [
 				[x.max,y.max],
