@@ -274,16 +274,6 @@ function findTarget() {
 
 function attack(target) {
 	switch (me('type')) {
-		case 'infantryBot':
-			switch (target.type) {
-				case 'commandCenter':
-					// To do: help atk center at key time
-					break
-				case 'machineGun':
-					back()
-					return
-			}
-			break
 		case 'rocketBot':
 			switch (target.type) {
 				case 'commandCenter':
