@@ -7,10 +7,26 @@ var _ = {
 	askMyInfo: client.askMyInfo(),
 	logs: [],
 	pathHistory: [],
+	message: 0,
+}
+
+function whenMessage(r) {
+	_.message++
+	if (_.message === team().length) {
+		whenReady()
+	} else {
+		client.whenMessage().then(whenMessage)
+	}
 }
 
 function whenIdle() {
-	if (isReady()) {
+	if (me('level') >= 4) {
+		_.message++
+		client.doMessageToTeam(_.message)
+		if (_.message === team().length) {
+			whenReady()
+		}
+	} else if (isReady()) {
 		if (me('level') >= 2) {
 			timeout(1).then(whenReady) // to avoid the latest idle case
 		} else {
@@ -313,3 +329,6 @@ _.rocketBot = [
 ]
 go(position('RT')) // this will effect isReady(), don't put in cmds
 client.whenIdle().then(whenIdle)
+if (me('level') >= 4) {
+	client.whenMessage().then(whenMessage)
+}
