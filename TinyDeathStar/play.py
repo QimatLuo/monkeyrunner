@@ -231,7 +231,7 @@ class TinyDeathStar:
 
     def action_hero(self, wait = True):
         MonkeyRunner.sleep(1);
-        self.util.click('continue')
+        self.util.click('yes')
         self.find_people()
         if wait:
             while not self.util.pixel('hero icon'):
