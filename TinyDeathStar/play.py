@@ -267,7 +267,7 @@ class TinyDeathStar:
             name ='elevator up',
             duration = 6,
             steps = 1,
-            delay = 3,
+            delay = 5,
         )
         self.util.click('yes')
         return True
