@@ -62,7 +62,25 @@ function pythagorean(x, y) {
 
 function whenReady() {
 	var target = findTarget()
-	attack(target)
+	if (target.type === 'rocketGun') {
+		var goDie = team().sort(
+			(a, b) => {
+				return b.hit_points - a.hit_points
+			}
+		)[0]
+
+		if (me('id') === goDie.id) {
+			attack(target)
+		} else {
+			client.whenTime(client.askCurTime() + 1).then(
+				() => {
+					attack(target)
+				}
+			)
+		}
+	} else {
+		attack(target)
+	}
 	client.whenItemDestroyed(target.id).then(whenReady)
 }
 
@@ -158,7 +176,13 @@ function position(path) {
 }
 
 function findTarget() {
-	var target = client.askNearestEnemy( _.enemies)
+	var target = client.askTowers().filter(
+		item => {
+			return item.type === 'rocketGun'
+		}
+	)[0]
+
+	target = target || client.askNearestEnemy( _.enemies)
 	if (target.type !== 'commandCenter') return target
 
 	var rocketRange = 8
