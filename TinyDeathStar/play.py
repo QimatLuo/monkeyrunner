@@ -265,7 +265,7 @@ class TinyDeathStar:
     def action_unknown(self):
         self.util.hold(
             name ='elevator up',
-            duration = 6,
+            duration = 8,
             steps = 1,
             delay = 5,
         )
