@@ -69,7 +69,7 @@ function back() {
 		client.doMove(rocket.coordinates)
 		_.logs.push('back to rockets')
 	} else {
-		var last2me = targetPosition(_.pathHistory.pop(), me('coordinates'))
+		var last2me = p2p(_.pathHistory.pop(), me('coordinates'))
 		_.logs.push('back to last pos')
 		client.doMove(last2me.fireCoordinates)
 	}
@@ -82,7 +82,7 @@ function go(path) {
 	client.doMoves(path)
 }
 
-function targetPosition(from, to, r) {
+function p2p(from, to, r) {
 	if (!from) {
 		from = me('coordinates')
 	}
@@ -144,8 +144,8 @@ function whenReady() {
 				) {
 					attack(target)
 				} else {
-					var infantryLen = targetPosition(team('infantryBot').coordinates,null,4).fireDistance
-					var myLen = targetPosition().fireDistance
+					var infantryLen = p2p(team('infantryBot').coordinates,null,4).fireDistance
+					var myLen = p2p().fireDistance
 					var wait = infantryLen / 2 - myLen / me('speed')
 					_.logs.push('wait ' + wait + 's')
 					printLogs()
@@ -258,10 +258,10 @@ function findTarget() {
 	if (target.type !== 'commandCenter') return target
 
 	var rocketRange = 8
-	var me2target = targetPosition(null, null, rocketRange)
+	var me2target = p2p(null, null, rocketRange)
 	var unSafe = client.askTowers().some(
 		tower => {
-			var pos2tower = targetPosition(me2target.fireCoordinates, tower.coordinates)
+			var pos2tower = p2p(me2target.fireCoordinates, tower.coordinates)
 			return pos2tower.distance <= tower.firing_range
 		}
 	)
