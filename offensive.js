@@ -134,8 +134,11 @@ function whenReady() {
 
 		var target = findTarget()
 		switch (me('type')) {
-			case 'infantryBot':
+			case 'heavyBot':
 				attack(target)
+				break
+			case 'infantryBot':
+				waitThenAttack(target)
 				break
 			case 'rocketBot':
 				if (
@@ -144,20 +147,31 @@ function whenReady() {
 				) {
 					attack(target)
 				} else {
-					var infantryLen = p2p(team('infantryBot').coordinates,null,4).fireDistance
-					var myLen = p2p().fireDistance
-					var wait = infantryLen / 2 - myLen / me('speed')
-					_.logs.push('wait ' + wait + 's')
-					printLogs()
-					timeout(wait).then(
-						() => {
-							attack(target)
-						}
-					)
+					waitThenAttack(target)
 				}
 				break
 		}
 		client.whenItemDestroyed(target.id).then(whenReady)
+	}
+}
+
+function waitThenAttack(target) {
+	var heavy = team('heavyBot')
+	var heavy2target = p2p(heavy.coordinates,target.coordinates)
+	var hurtLen = heavy2target.distance - target.firing_range
+	var myLen = p2p().fireDistance
+	var wait = hurtLen / heavy.speed - myLen / me('speed')
+	_.logs.push('wait ' + wait + 's')
+	printLogs()
+
+	if (wait < 0) {
+		attack(target)
+	} else {
+		timeout(wait).then(
+			() => {
+				attack(target)
+			}
+		)
 	}
 }
 
@@ -331,6 +345,9 @@ _.enemies = [
 	//ROLE.BUILDING,
 	//ROLE.OBSTACLE,
 	//ROLE.ALL,
+]
+_.heavyBot = [
+	'auto',
 ]
 _.infantryBot = [
 	'auto',
