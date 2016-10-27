@@ -5,21 +5,53 @@ var ROLE = require("battle/terms.js").ROLE;
 var client = new Client();
 var _ = {
 	askMyInfo: client.askMyInfo(),
-	message: 0,
 }
 
-function whenMessage(r) {
-	if (!isReady()) {
-		client.whenMessage().then(whenMessage)
+function whenIdle() {
+	if (isReady()) {
+		if (me('level') >= 2) {
+			timeout(1).then(whenReady) // to avoid the latest idle case
+		} else {
+			whenReady()
+		}
+	} else {
+		client.whenIdle().then(whenIdle)
 	}
 }
 
 function isReady() {
-	_.message++
-	if (_.message !== team().length) return
+	if (client.askCurTime() < 10) return // avoid init only 1 client then ready
 
-	whenReady()
-	return true
+	/* not use === 'idle' is because lastest one just idle, but other bot alreay moved
+	 * then idle bot will wait unitl other bot attacking, state will change to others
+	 * so this idle bot can go next step
+	 */
+	return team()
+		.every( item => item.state.action !== 'move' )
+}
+
+function timeout(sec) {
+	if (me('level') < 2) {
+		var pos = me('coordinates')
+		var x = pos[0]
+		var y = pos[1]
+		var r = sec * me('speed') / 2
+
+		if (x < 30 && y > 20) {
+			y -= r
+		} else if (x > 30 && y > 20) {
+			x -= r
+		} else if (x > 30 && y < 20) {
+			x -= r
+		} else if (x < 30 && y < 20) {
+			y += r
+		}
+
+		client.doMoves([ [x,y], pos ]) // don't use go(), this is fake move
+		return client.whenIdle()
+	} else {
+		return client.whenTime(client.askCurTime() + sec)
+	}
 }
 
 function go(path) {
@@ -212,9 +244,5 @@ _.enemies = [
 	ROLE.CENTER,
 	ROLE.TOWER,
 ]
-go(position('RT')) // this will effect isReady(), don't put in cmds
-client.whenIdle().then(() => {
-	client.doMessageToTeam(_.message)
-	isReady()
-})
-client.whenMessage().then(whenMessage)
+go(position('C')) // this will effect isReady(), don't put in cmds
+client.whenIdle().then(whenIdle)
