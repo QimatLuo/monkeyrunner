@@ -276,8 +276,13 @@ function position(path) {
 }
 
 function findTarget() {
-	var target = client.askNearestEnemy( _.enemies)
-	_.logs.push('Target is ' + target.type + target.id)
+	var target = client.askTowers().filter(
+		item => {
+			return item.type === 'rocketGun'
+		}
+	)[0]
+
+	target = target || client.askNearestEnemy( _.enemies)
 	if (target.type !== 'commandCenter') return target
 
 	var rocketRange = 8
@@ -290,7 +295,6 @@ function findTarget() {
 	)
 	if (unSafe) {
 		target = client.askNearestEnemy([ROLE.TOWER])
-		_.logs.push('Chante target ' + target.type + target.id)
 	}
 	return target
 }
