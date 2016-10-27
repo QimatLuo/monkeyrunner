@@ -90,7 +90,8 @@ class TinyDeathStar:
         self.device = self.util.device
 
         self.util.positions = {
-            'floor': { 'x': 400, 'y': 888 },
+            'floor': { 'x': 400, 'y': 800 },
+            'imperial floor': { 'x': 400, 'y': 888 },
             'salvace droids': { 'x': 400, 'y': 900 },
             'elevator up': { 'x': 400, 'y': 800 },
             'elevator down': { 'x': 400, 'y': 1000 },
@@ -209,7 +210,7 @@ class TinyDeathStar:
         return self.action_elevator()
 
     def action_imperial(self):
-        self.util.click('floor')
+        self.util.click('imperial floor')
 
         print 'check green items'
         img = self.device.takeSnapshot()
@@ -264,9 +265,9 @@ class TinyDeathStar:
     def action_unknown(self):
         self.util.hold(
             name ='elevator up',
-            duration = 6,
+            duration = 8,
             steps = 1,
-            delay = 3,
+            delay = 5,
         )
         self.util.click('yes')
         return True
