@@ -5,6 +5,4 @@ Device Samsung Galaxy Note 8.0 (3G)
 
 # Empire of Code
 ## To do
-- **Improve back()**
-- **Improve infantry attack center process**
-- **Check initial slow issue**
+- **Attack rocketGun**
