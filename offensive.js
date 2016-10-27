@@ -206,43 +206,66 @@ function position(path) {
 	switch (path) {
 		case 'C':
 			path = [
-				[x.max,y.max/2],
+				[1, 0.5],
 			]
 			break
 		case 'CC':
 			path = [
-				[x.max,y.max/2],
-				[(x.min + x.max)/2,y.max/2],
+				[1, 0.5],
+				[0.5, 0.5],
 			]
 			break
 		case 'CT':
 			path = [
-				[x.max,y.max/2],
-				[x.min,y.max/2],
-			]
-			break
-		case 'LT':
-			path = [
-				[x.max,y.max],
-				[x.min,y.max],
+				[1, 0.5],
+				[0, 0.5],
 			]
 			break
 		case 'L':
 			path = [
-				[x.max,y.max],
+				[1, 1],
 			]
 			break
-		case 'RT':
+		case 'LC':
 			path = [
-				[x.max,y.min],
-				[x.min,y.min],
+				[1, 1],
+				[0.5, 1],
+			]
+			break
+		case 'LT':
+			path = [
+				[1, 1],
+				[0, 1],
 			]
 			break
 		case 'R':
 			path = [
-				[x.max,y.min],
+				[1, 0],
 			]
 			break
+		case 'RC':
+			path = [
+				[1, 0],
+				[0.5, 0],
+			]
+			break
+		case 'RT':
+			path = [
+				[1, 0],
+				[0, 0],
+			]
+			break
+	}
+
+	if (Array.isArray(path)) {
+		path = path.map(
+			pos => {
+				return [
+					x.min + (x.max - x.min) * pos[0],
+					y.min + (y.max - y.min) * pos[1],
+				]
+			}
+		)
 	}
 
 	if (!path) {
