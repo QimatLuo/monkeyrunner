@@ -157,9 +157,13 @@ function whenReady() {
 
 function waitThenAttack(target) {
 	var heavy = team('heavyBot')
+	if (!heavy) {
+		return attack(target)
+	}
+
 	var heavy2target = p2p(heavy.coordinates,target.coordinates)
-	var hurtLen = heavy2target.distance - target.firing_range
-	var myLen = p2p().fireDistance
+	var hurtLen = heavy2target.distance - target.firing_range / 2
+	var myLen = p2p(null, target.coordinates).fireDistance
 	var wait = hurtLen / heavy.speed - myLen / me('speed')
 	_.logs.push('wait ' + wait + 's')
 	printLogs()
@@ -193,6 +197,7 @@ function team(type) {
 				}
 			}
 		)
+
 		return output
 	} else {
 		return client.askMyItems()
