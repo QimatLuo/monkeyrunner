@@ -103,7 +103,7 @@ class TinyDeathStar:
             'place order 1': { 'x': 444, 'y': 400 },
             'action': { 'x': 58, 'y': 1173 },
             'app': { 'x': 200, 'y': 1150 },
-            'elevator empty': { 'x': 67, 'y': 1000 },
+            'elevator empty': { 'x': 72, 'y': 1000 },
             'elevator target border 1': { 'x': 155, 'y': 765 },
             'elevator target border 2': { 'x': 155, 'y': 530 },
             'elevator target border 3': { 'x': 155, 'y': 305 },
@@ -128,7 +128,7 @@ class TinyDeathStar:
         }
         self.util.colors = {
             'continue': (-1,15,209,0),
-            'elevator empty': (-1,6,6,7),
+            'elevator empty': (-1,26,27,31),
             'elevator empty imperial': (-1,11,1,2),
             'elevator target border': (-1,0,174,239),
             'elevator target border 4': (-1,0,174,238),
@@ -191,7 +191,8 @@ class TinyDeathStar:
                     name ='elevator up',
                     #duration = 0.6 * (i-1) + 0.7, # 2x
                     #duration = 0.3 * (i-1) + 0.7, # 3x
-                    duration = 0.25 * (i-1) + 0.45, # 4x
+                    #duration = 0.25 * (i-1) + 0.45, # 4x
+                    duration = 0.14 * (i-1) + 0.45, # 5x
                     steps = 1,
                     delay = 2,
                 )
