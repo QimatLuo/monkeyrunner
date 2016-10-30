@@ -275,23 +275,32 @@ class TinyDeathStar:
 
     def action_vip(self):
         self.util.click('no')
-        return True
-        self.util.click('yes')
         img = self.device.takeSnapshot()
-        for name in ['bigSpender','celebrity','levelMover','recruitingOfficer','supplyOfficer','upgrader']:
-            if self.util.check(name, (92,878,70,129), 1, img):
-                break
+        exit()
+        return True
 
-        print name
-        self.util.hold(
-            name ='elevator down',
-            duration = 6,
-            steps = 1,
-            delay = 2,
-        )
-        self.util.click('yes')
+        loop = True
+        while loop:
+            img = self.device.takeSnapshot()
+            for name in ['bigSpender','celebrity','levelMover','recruitingOfficer','supplyOfficer','upgrader']:
+                if self.util.check(name, (92,878,70,45), 1, img):
+                    loop = False
+                    break
+
+        if name == 'supplyOfficer':
+            self.util.hold(
+                name ='elevator down',
+                duration = 10,
+                steps = 1,
+                delay = 2,
+            )
+            self.util.click('yes')
+        else:
+            self.action_unknown()
+
         if name == 'levelMover':
             self.util.click('no')
+
         return True
 
     def find_people(self):
@@ -334,7 +343,7 @@ class TinyDeathStar:
         return ret
 
 self = TinyDeathStar()
-#self.action_elevator() """
+#self.action_vip() """
 self.device.drag((444,800),(444,8),1,1); print 'swipe to bottom'; MonkeyRunner.sleep(2);
 while self.parse_action():
     print ''
