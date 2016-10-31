@@ -43,7 +43,7 @@ function timeout(sec) {
 		var pos = me('coordinates')
 		var x = pos[0]
 		var y = pos[1]
-		var r = sec * me('speed') / 2
+		var r = sec * me('speed') / 1.5
 
 		if (x < 30 && y > 20) {
 			y -= r
@@ -138,17 +138,8 @@ function whenReady() {
 				attack(target)
 				break
 			case 'infantryBot':
-				waitThenAttack(target)
-				break
 			case 'rocketBot':
-				if (
-					target.type === 'commandCenter' ||
-					target.type === 'machineGun'
-				) {
-					attack(target)
-				} else {
-					waitThenAttack(target)
-				}
+				waitThenAttack(target)
 				break
 		}
 		client.whenItemDestroyed(target.id).then(whenReady)
@@ -156,15 +147,24 @@ function whenReady() {
 }
 
 function waitThenAttack(target) {
-	var heavy = team('heavyBot')
-	if (!heavy) {
+	if (unSafe(me('coordinates')).length) {
+		_.logs.push('unsafe')
 		return attack(target)
 	}
 
-	var heavy2target = p2p(heavy.coordinates,target.coordinates)
-	var hurtLen = heavy2target.distance - target.firing_range / 2
+	var slow = team('heavyBot')
+	if (!slow && me('type') === 'rocketBot') {
+		slow = team('infantryBot')
+	}
+	if (!slow) {
+		_.logs.push('nobody slower than me')
+		return attack(target)
+	}
+
+	var slow2target = p2p(slow.coordinates,target.coordinates)
+	var hurtLen = slow2target.distance - target.firing_range / 2
 	var myLen = p2p(null, target.coordinates).fireDistance
-	var wait = hurtLen / heavy.speed - myLen / me('speed')
+	var wait = hurtLen / slow.speed - myLen / me('speed')
 	_.logs.push('wait ' + wait + 's')
 	printLogs()
 
@@ -294,6 +294,20 @@ function position(path) {
 	return path
 }
 
+function unSafe(coordinates) {
+	return client.askTowers().filter(
+		tower => {
+			var pos2tower = p2p(coordinates, tower.coordinates)
+			return pos2tower.distance <= tower.firing_range
+		}
+	).sort(
+		(a, b) => {
+			var priority = ['rocketGun', 'machineGun', 'sentryGun']
+			return priority.indexOf(a.type) - priority.indexOf(b.type)
+		}
+	)
+}
+
 function findTarget() {
 	var target = client.askTowers().filter(
 		item => {
@@ -306,14 +320,10 @@ function findTarget() {
 
 	var rocketRange = 8
 	var me2target = p2p(null, null, rocketRange)
-	var unSafe = client.askTowers().some(
-		tower => {
-			var pos2tower = p2p(me2target.fireCoordinates, tower.coordinates)
-			return pos2tower.distance <= tower.firing_range
-		}
-	)
-	if (unSafe) {
-		target = client.askNearestEnemy([ROLE.TOWER])
+	var towers = unSafe(me2target.fireCoordinates)
+	if (towers.length) {
+		target = towers[0]
+		console.log(target.type)
 	}
 	return target
 }
