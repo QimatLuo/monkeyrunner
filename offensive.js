@@ -152,6 +152,10 @@ function waitThenAttack(target) {
 		return attack(target)
 	}
 
+	if (target.type === 'commandCenter') {
+		return attack(target)
+	}
+
 	var slow = team('heavyBot')
 	if (!slow && me('type') === 'rocketBot') {
 		slow = team('infantryBot')
@@ -309,21 +313,16 @@ function unSafe(coordinates) {
 }
 
 function findTarget() {
-	var target = client.askTowers().filter(
-		item => {
-			return item.type === 'rocketGun'
-		}
-	)[0]
-
-	target = target || client.askNearestEnemy( _.enemies)
-	if (target.type !== 'commandCenter') return target
-
+	var target = client.askNearestEnemy( _.enemies)
 	var rocketRange = 8
 	var me2target = p2p(null, null, rocketRange)
 	var towers = unSafe(me2target.fireCoordinates)
-	if (towers.length) {
+	if (
+		towers.length &&
+		towers[0].type !== 'sentryGun'
+	) {
 		target = towers[0]
-		console.log(target.type)
+		console.log('!!!!', target.type)
 	}
 	return target
 }
