@@ -192,7 +192,7 @@ class TinyDeathStar:
                     #duration = 0.6 * (i-1) + 0.7, # 2x
                     #duration = 0.3 * (i-1) + 0.7, # 3x
                     #duration = 0.25 * (i-1) + 0.45, # 4x
-                    duration = 0.14 * (i-1) + 0.45, # 5x
+                    duration = 0.135 * (i-1) + 0.45, # 5x
                     steps = 1,
                     delay = 2,
                 )
