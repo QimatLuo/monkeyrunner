@@ -218,14 +218,8 @@ class TinyDeathStar:
         checkPoints = [280,510]
         for i in range(1,3):
             if self.util.pixel('imperial border %d' %(i), 'item border green', img):
-                self.util.click('imperial item %d' %(i))
-                break
-
-        print 'check red items'
-        img = self.device.takeSnapshot()
-        for i in range(1,3):
-            if self.util.pixel('imperial border %d' %(i), 'item border red', img):
                 self.util.click('imperial item %d' %(i), 2)
+                self.util.click('imperial item %d' %(i))
                 break
 
         self.util.click('yes')
