@@ -322,7 +322,6 @@ class TinyDeathStar:
                 noAction = False
                 self.util.click('action')
                 ret = getattr(self, 'action_%s' % name)()
-                self.device.drag((444,800),(444,8),1,1); print 'swipe to bottom'; MonkeyRunner.sleep(2);
                 break
         if noAction:
             if self.util.pixel('desktop', img):
@@ -341,6 +340,5 @@ class TinyDeathStar:
 
 self = TinyDeathStar()
 #self.action_vip() """
-self.device.drag((444,800),(444,8),1,1); print 'swipe to bottom'; MonkeyRunner.sleep(2);
 while self.parse_action():
     print ''
