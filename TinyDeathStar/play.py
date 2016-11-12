@@ -274,16 +274,12 @@ class TinyDeathStar:
         return True
 
     def action_vip(self):
-        self.util.click('no')
-        img = self.device.takeSnapshot()
-        exit()
-        return True
-
+        self.util.click('yes')
         loop = True
         while loop:
             img = self.device.takeSnapshot()
             for name in ['bigSpender','celebrity','levelMover','recruitingOfficer','supplyOfficer','upgrader']:
-                if self.util.check(name, (92,878,70,45), 1, img):
+                if self.util.check(name, (92,878,70,45), 0.99, img):
                     loop = False
                     break
 
@@ -299,6 +295,7 @@ class TinyDeathStar:
             self.action_unknown()
 
         if name == 'levelMover':
+            MonkeyRunner.sleep(2)
             self.util.click('no')
 
         return True
