@@ -352,24 +352,12 @@ function findTarget() {
 }
 
 function attack(target) {
-	switch (me('type')) {
-		case 'rocketBot':
-			switch (target.type) {
-				case 'commandCenter':
-					_.logs.push('lv4 doMessage("rocket able to atk center, other can stop")')
-					break
-			}
-			break
-	}
-
-	client.whenEnemyInRange().then( r => {
-	})
-
 	if (info(target.id).is_dead) {
 		_.logs.push(target.type + target.id + ' is dead')
 		printLogs()
 		client.whenIdle().then(whenReady)
 	} else {
+		_.logs.push('attack ' + target.type + target.id)
 		printLogs()
 		client.doAttack(target.id)
 	}
