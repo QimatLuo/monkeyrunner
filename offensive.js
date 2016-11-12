@@ -256,11 +256,17 @@ function position(path) {
 			]
 			break
 		case 'LT':
+			var limitY = client.askTowers().reduce(
+				(max, tower) => {
+					return Math.max(max, tower.coordinates[1] + tower.firing_range)
+				},
+				y.min
+			)
 			path = [
-				[1, 1],
-				[0, 1],
+				[x.max, limitY - 1],
+				[x.min, limitY - 1],
 			]
-			break
+			return path
 		case 'R':
 			path = [
 				[1, 0],
@@ -273,11 +279,17 @@ function position(path) {
 			]
 			break
 		case 'RT':
+			var limitY = client.askTowers().reduce(
+				(min, tower) => {
+					return Math.min(min, tower.coordinates[1] - tower.firing_range)
+				},
+				y.max
+			)
 			path = [
-				[1, 0],
-				[0, 0],
+				[x.max, limitY - 1],
+				[x.min, limitY - 1],
 			]
-			break
+			return path
 	}
 
 	if (Array.isArray(path)) {
