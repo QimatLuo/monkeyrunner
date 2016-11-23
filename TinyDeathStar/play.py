@@ -103,6 +103,7 @@ class TinyDeathStar:
             'place order 1': { 'x': 444, 'y': 400 },
             'action': { 'x': 58, 'y': 1173 },
             'app': { 'x': 200, 'y': 1150 },
+            'app continue': { 'x': 400, 'y': 1050 },
             'elevator empty': { 'x': 72, 'y': 1000 },
             'elevator target border 1': { 'x': 155, 'y': 765 },
             'elevator target border 2': { 'x': 155, 'y': 530 },
@@ -319,7 +320,8 @@ class TinyDeathStar:
                 break
         if noAction:
             if self.util.pixel('desktop', img):
-                self.util.click('app')
+                self.util.click('app', 10)
+                self.util.click('app continue')
             elif not self.util.pixel('menu', img):
                 self.util.back()
             elif self.util.pixel('leave modal', img):
