@@ -261,6 +261,7 @@ class TinyDeathStar:
         return True
 
     def action_vip(self):
+        self.util.click('no'); return True
         self.util.click('yes')
         loop = True
         while loop:
