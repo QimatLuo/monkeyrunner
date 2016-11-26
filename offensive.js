@@ -43,7 +43,7 @@ function timeout(sec) {
 		var pos = me('coordinates')
 		var x = pos[0]
 		var y = pos[1]
-		var r = sec * me('speed') / 2
+		var r = sec * me('speed') / 1.5
 
 		if (x < 30 && y > 20) {
 			y -= r
@@ -138,17 +138,8 @@ function whenReady() {
 				attack(target)
 				break
 			case 'infantryBot':
-				waitThenAttack(target)
-				break
 			case 'rocketBot':
-				if (
-					target.type === 'commandCenter' ||
-					target.type === 'machineGun'
-				) {
-					attack(target)
-				} else {
-					waitThenAttack(target)
-				}
+				waitThenAttack(target)
 				break
 		}
 		client.whenItemDestroyed(target.id).then(whenReady)
@@ -156,11 +147,28 @@ function whenReady() {
 }
 
 function waitThenAttack(target) {
-	var heavy = team('heavyBot')
-	var heavy2target = p2p(heavy.coordinates,target.coordinates)
-	var hurtLen = heavy2target.distance - target.firing_range
-	var myLen = p2p().fireDistance
-	var wait = hurtLen / heavy.speed - myLen / me('speed')
+	if (unSafe(me('coordinates')).length) {
+		_.logs.push('unsafe')
+		return attack(target)
+	}
+
+	if (target.type === 'commandCenter') {
+		return attack(target)
+	}
+
+	var slow = team('heavyBot')
+	if (!slow && me('type') === 'rocketBot') {
+		slow = team('infantryBot')
+	}
+	if (!slow) {
+		_.logs.push('nobody slower than me')
+		return attack(target)
+	}
+
+	var slow2target = p2p(slow.coordinates,target.coordinates)
+	var hurtLen = slow2target.distance - target.firing_range / 2
+	var myLen = p2p(null, target.coordinates).fireDistance
+	var wait = hurtLen / slow.speed - myLen / me('speed')
 	_.logs.push('wait ' + wait + 's')
 	printLogs()
 
@@ -193,6 +201,7 @@ function team(type) {
 				}
 			}
 		)
+
 		return output
 	} else {
 		return client.askMyItems()
@@ -247,11 +256,23 @@ function position(path) {
 			]
 			break
 		case 'LT':
+			var pos = client.askTowers().reduce(
+				(pos, tower) => {
+					var range = tower.coordinates[1] + tower.firing_range + 1
+
+					if (range > pos[1]) {
+						return [tower.coordinates[0], range]
+					} else {
+						return pos
+					}
+				},
+				[x.min, y.min]
+			)
 			path = [
-				[1, 1],
-				[0, 1],
+				[x.max, pos[1]],
+				pos,
 			]
-			break
+			return path
 		case 'R':
 			path = [
 				[1, 0],
@@ -264,11 +285,23 @@ function position(path) {
 			]
 			break
 		case 'RT':
+			var pos = client.askTowers().reduce(
+				(pos, tower) => {
+					var range = tower.coordinates[1] - tower.firing_range - 1
+
+					if (range < pos[1]) {
+						return [tower.coordinates[0], range]
+					} else {
+						return pos
+					}
+				},
+				[x.min, y.max]
+			)
 			path = [
-				[1, 0],
-				[0, 0],
+				[x.max, pos[1]],
+				pos,
 			]
-			break
+			return path
 	}
 
 	if (Array.isArray(path)) {
@@ -289,49 +322,42 @@ function position(path) {
 	return path
 }
 
-function findTarget() {
-	var target = client.askTowers().filter(
-		item => {
-			return item.type === 'rocketGun'
-		}
-	)[0]
-
-	target = target || client.askNearestEnemy( _.enemies)
-	if (target.type !== 'commandCenter') return target
-
-	var rocketRange = 8
-	var me2target = p2p(null, null, rocketRange)
-	var unSafe = client.askTowers().some(
+function unSafe(coordinates) {
+	return client.askTowers().filter(
 		tower => {
-			var pos2tower = p2p(me2target.fireCoordinates, tower.coordinates)
+			var pos2tower = p2p(coordinates, tower.coordinates)
 			return pos2tower.distance <= tower.firing_range
 		}
+	).sort(
+		(a, b) => {
+			var priority = ['rocketGun', 'machineGun', 'sentryGun']
+			return priority.indexOf(a.type) - priority.indexOf(b.type)
+		}
 	)
-	if (unSafe) {
-		target = client.askNearestEnemy([ROLE.TOWER])
+}
+
+function findTarget() {
+	var target = client.askNearestEnemy( _.enemies)
+	var rocketRange = 8
+	var me2target = p2p(null, null, rocketRange)
+	var towers = unSafe(me2target.fireCoordinates)
+	if (
+		towers.length &&
+		towers[0].type !== 'sentryGun'
+	) {
+		target = towers[0]
+		console.log('!!!!', target.type)
 	}
 	return target
 }
 
 function attack(target) {
-	switch (me('type')) {
-		case 'rocketBot':
-			switch (target.type) {
-				case 'commandCenter':
-					_.logs.push('lv4 doMessage("rocket able to atk center, other can stop")')
-					break
-			}
-			break
-	}
-
-	client.whenEnemyInRange().then( r => {
-	})
-
 	if (info(target.id).is_dead) {
 		_.logs.push(target.type + target.id + ' is dead')
 		printLogs()
 		client.whenIdle().then(whenReady)
 	} else {
+		_.logs.push('attack ' + target.type + target.id)
 		printLogs()
 		client.doAttack(target.id)
 	}
