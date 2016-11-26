@@ -103,7 +103,8 @@ class TinyDeathStar:
             'place order 1': { 'x': 444, 'y': 400 },
             'action': { 'x': 58, 'y': 1173 },
             'app': { 'x': 200, 'y': 1150 },
-            'elevator empty': { 'x': 67, 'y': 1000 },
+            'app continue': { 'x': 400, 'y': 1050 },
+            'elevator empty': { 'x': 72, 'y': 1000 },
             'elevator target border 1': { 'x': 155, 'y': 765 },
             'elevator target border 2': { 'x': 155, 'y': 530 },
             'elevator target border 3': { 'x': 155, 'y': 305 },
@@ -128,7 +129,7 @@ class TinyDeathStar:
         }
         self.util.colors = {
             'continue': (-1,15,209,0),
-            'elevator empty': (-1,6,6,7),
+            'elevator empty': (-1,26,27,31),
             'elevator empty imperial': (-1,11,1,2),
             'elevator target border': (-1,0,174,239),
             'elevator target border 4': (-1,0,174,238),
@@ -167,8 +168,9 @@ class TinyDeathStar:
         self.util.click('elevator up')
         loop = True
         while loop:
-            print 'check elevator target'
+            print 'check elevator'
             img = self.device.takeSnapshot()
+            self.parse_level(img)
 
             if self.util.pixel('roof red light', img):
                 self.util.hold(
@@ -178,36 +180,28 @@ class TinyDeathStar:
                     delay = 2,
                 )
                 loop = False
+            elif self.util.pixel('elevator empty', img):
+                loop = False
+            elif self.util.pixel('elevator empty', 'elevator empty imperial', img):
+                loop = False
             else:
                 for i in range(1,4):
                     if self.util.pixel('elevator target border %d' %(i), 'elevator target border', img):
-                        loop = False
                         break
-                if loop:
-                    loop = not self.util.pixel('elevator target border 4', img)
-                    i += 1
 
                 self.util.hold(
                     name ='elevator up',
                     #duration = 0.6 * (i-1) + 0.7, # 2x
                     #duration = 0.3 * (i-1) + 0.7, # 3x
-                    duration = 0.25 * (i-1) + 0.45, # 4x
+                    #duration = 0.25 * (i-1) + 0.45, # 4x
+                    duration = 0.135 * (i-1) + 0.45, # 5x
                     steps = 1,
                     delay = 2,
                 )
 
-        MonkeyRunner.sleep(4)
-        print 'check elevator gone'
-        img = self.device.takeSnapshot()
-        if self.util.pixel('elevator empty', img):
-            return True
-        elif self.util.pixel('elevator empty', 'elevator empty imperial', img):
-            return True
-        elif not self.util.pixel('menu', img):
-            self.util.back()
-            self.util.back()
-            return True
-        return self.action_elevator()
+            MonkeyRunner.sleep(4);
+
+        return True
 
     def action_imperial(self):
         self.util.click('imperial floor')
@@ -217,14 +211,8 @@ class TinyDeathStar:
         checkPoints = [280,510]
         for i in range(1,3):
             if self.util.pixel('imperial border %d' %(i), 'item border green', img):
-                self.util.click('imperial item %d' %(i))
-                break
-
-        print 'check red items'
-        img = self.device.takeSnapshot()
-        for i in range(1,3):
-            if self.util.pixel('imperial border %d' %(i), 'item border red', img):
                 self.util.click('imperial item %d' %(i), 2)
+                self.util.click('imperial item %d' %(i))
                 break
 
         self.util.click('yes')
@@ -273,24 +261,31 @@ class TinyDeathStar:
         return True
 
     def action_vip(self):
-        self.util.click('no')
-        return True
+        self.util.click('no'); return True
         self.util.click('yes')
-        img = self.device.takeSnapshot()
-        for name in ['bigSpender','celebrity','levelMover','recruitingOfficer','supplyOfficer','upgrader']:
-            if self.util.check(name, (92,878,70,129), 1, img):
-                break
+        loop = True
+        while loop:
+            img = self.device.takeSnapshot()
+            for name in ['bigSpender','celebrity','levelMover','recruitingOfficer','supplyOfficer','upgrader']:
+                if self.util.check(name, (92,878,70,45), 0.99, img):
+                    loop = False
+                    break
 
-        print name
-        self.util.hold(
-            name ='elevator down',
-            duration = 6,
-            steps = 1,
-            delay = 2,
-        )
-        self.util.click('yes')
+        if name == 'supplyOfficer':
+            self.util.hold(
+                name ='elevator down',
+                duration = 10,
+                steps = 1,
+                delay = 2,
+            )
+            self.util.click('yes')
+        else:
+            self.action_unknown()
+
         if name == 'levelMover':
+            MonkeyRunner.sleep(2)
             self.util.click('no')
+
         return True
 
     def find_people(self):
@@ -315,11 +310,11 @@ class TinyDeathStar:
                 noAction = False
                 self.util.click('action')
                 ret = getattr(self, 'action_%s' % name)()
-                self.device.drag((444,800),(444,8),1,1); print 'swipe to bottom'; MonkeyRunner.sleep(2);
                 break
         if noAction:
             if self.util.pixel('desktop', img):
-                self.util.click('app')
+                self.util.click('app', 10)
+                self.util.click('app continue')
             elif not self.util.pixel('menu', img):
                 self.util.back()
             elif self.util.pixel('leave modal', img):
@@ -332,8 +327,47 @@ class TinyDeathStar:
                 
         return ret
 
+    def parse_level(self, img):
+        x = 67
+        y = 848
+        w = 116
+        h = 167
+
+        sub = img.getSubImage((x, y, w, h))
+        start = False
+        array = []
+        count = 0
+        for y in range(h):
+            row = []
+            for x in range(w):
+                i = sub.getRawPixelInt(x, y)
+                p = sub.getRawPixel(x, y)
+                #print '%s %d %d,%d' %(p, i, x, y)
+                if i == -16777216:
+                    if not start:
+                        start = True
+                        minX = x
+                        maxX = x
+                    else:
+                        minX = min(minX, x)
+                        maxX = max(maxX, x)
+
+                    row.append('*')
+                else:
+                    row.append('_')
+
+            if start:
+                if count > 1:
+                    break
+                elif ''.join(row).find('*') == -1:
+                    count+=1
+                else:
+                    array.append(row)
+
+        for row in array:
+            print ''.join(row)[minX:maxX]
+
 self = TinyDeathStar()
-#self.action_elevator() """
-self.device.drag((444,800),(444,8),1,1); print 'swipe to bottom'; MonkeyRunner.sleep(2);
+#self.action_vip() """
 while self.parse_action():
     print ''
