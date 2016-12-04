@@ -9,7 +9,7 @@ class Utility:
         self.device = MonkeyRunner.waitForConnection()
 
     def back(self, delay = 1):
-        print 'back, wait %ds' %(delay)
+        print 'back, wait %fs' %(delay)
         self.device.press('KEYCODE_BACK', MonkeyDevice.DOWN_AND_UP)
         MonkeyRunner.sleep(delay)
 
@@ -30,7 +30,7 @@ class Utility:
         x = pos['x']
         y = pos['y']
 
-        print 'click, %s (%d,%d), wait %ds' %(name, x, y, delay)
+        print 'click, %s (%d,%d), wait %fs' %(name, x, y, delay)
         self.device.touch(x, y, MonkeyDevice.DOWN_AND_UP)
         MonkeyRunner.sleep(delay)
 
@@ -48,7 +48,7 @@ class Utility:
         steps = args.get('steps', 10)
         delay = args.get('delay', 1)
 
-        print 'hold %s (%d, %d), %fs (%d), wait %ds' %(name, x, y, duration, steps, delay)
+        print 'hold %s (%d, %d), %fs (%d), wait %fs' %(name, x, y, duration, steps, delay)
         self.device.drag((x,y), (x,y), duration, steps)
         MonkeyRunner.sleep(delay)
 
@@ -83,27 +83,54 @@ class Utility:
         p = img.getRawPixel(x, y)
         print p
         return p == color
+    def sleep(self, delay = 1):
+        print 'wait %fs' %(delay)
+        MonkeyRunner.sleep(delay)
 
 class DotRangers:
     def __init__(self):
         self.util = Utility()
         self.device = self.util.device
+        self.package = 'com.lv0.dotrangers'
+        self.activity = 'com.unity3d.player.UnityPlayerActivity'
 
         self.util.positions = {
-            'ad': { 'x': 687, 'y': 685 },
+            'ad close': { 'x': 742, 'y': 62 },
             'ad yes': { 'x': 500, 'y': 530 },
+            'ad': { 'x': 687, 'y': 685 },
+            'close': { 'x': 460, 'y': 665 },
         }
         self.util.colors = {
             'ad': (-1,33,33,33),
         }
+
+    def open(self):
+        self.device.startActivity(component = self.package + '/' + self.activity)
+
+    def play(self):
+        self.open()
+        loop = True
+        while loop:
+            current = self.device.getProperty('am.current.comp.class')
+            print current
+
+            if current == 'com.unity3d.player.UnityPlayerActivity':
+                self.util.click('ad', 0.75)
+                self.util.click('close', 0.75)
+                self.util.click('ad yes', 0.75)
+            elif current == 'com.unity3d.ads.android.view.UnityAdsFullscreenActivity':
+                self.util.sleep(31)
+                self.util.back()
+                self.open()
+            elif current == 'com.google.android.gms.ads.AdActivity':
+                self.util.back()
+                self.open()
+            else:
+                loop = False
 
     def watch(self):
         while (not self.util.pixel('ad')):
             print 'no'
 
 self = DotRangers()
-while True:
-    self.watch()
-    self.util.click('ad')
-    self.util.click('ad yes')
-    self.util.back()
+self.play()
