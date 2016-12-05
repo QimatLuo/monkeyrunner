@@ -7,11 +7,13 @@ class Utility:
         call(["adb", "devices"])
         print 'waitting for connection'
         self.device = MonkeyRunner.waitForConnection()
+        self.height = float(self.device.getProperty('display.height'))
+        self.width = float(self.device.getProperty('display.width'))
 
     def back(self, delay = 1):
-        print 'back, wait %fs' %(delay)
+        print 'back',
         self.device.press('KEYCODE_BACK', MonkeyDevice.DOWN_AND_UP)
-        MonkeyRunner.sleep(delay)
+        self.sleep(delay)
 
     def check(self, name, pos, match, img = False):
         print 'check ' + name
@@ -26,31 +28,31 @@ class Utility:
         return sub.sameAs(self.load[name], match)
 
     def click(self, name, delay = 1):
-        pos = self.positions[name]
+        pos = self.position(name)
         x = pos['x']
         y = pos['y']
 
-        print 'click, %s (%d,%d), wait %fs' %(name, x, y, delay)
+        print 'click, %s (%d,%d)' %(name, x, y),
         self.device.touch(x, y, MonkeyDevice.DOWN_AND_UP)
-        MonkeyRunner.sleep(delay)
+        self.sleep(delay)
 
     def drag(self, **kwargs):
         print kwargs.msg
         self.device.drag(kwargs.start, kwargs.end, kwargs.duration, kwargs.steps)
-        MonkeyRunner.sleep(kwargs.delay)
+        self.sleep(kwargs.delay)
 
     def hold(self, **args):
         name = args['name']
-        pos = self.positions[name]
+        pos = self.position(name)
         x = pos['x']
         y = pos['y']
         duration = args.get('duration', 1)
         steps = args.get('steps', 10)
         delay = args.get('delay', 1)
 
-        print 'hold %s (%d, %d), %fs (%d), wait %fs' %(name, x, y, duration, steps, delay)
+        print 'hold %s (%d, %d), %fs (%d)' %(name, x, y, duration, steps),
         self.device.drag((x,y), (x,y), duration, steps)
-        MonkeyRunner.sleep(delay)
+        self.sleep(delay)
 
     def pixel(self, *args):
         if len(args) == 1:
@@ -71,7 +73,7 @@ class Utility:
             name2 = args[1]
             img = args[2]
 
-        pos = self.positions[name1]
+        pos = self.position(name1)
         color = self.colors[name2]
         x = pos['x']
         y = pos['y']
@@ -83,6 +85,16 @@ class Utility:
         p = img.getRawPixel(x, y)
         print p
         return p == color
+    def position(self, name):
+        pos = self.positions[name]
+        x = self.width * pos['x']
+        y = self.height * pos['y']
+        return {
+            'x': int(x),
+            'y': int(y),
+        }
+
     def sleep(self, delay = 1):
-        print 'wait %fs' %(delay)
-        MonkeyRunner.sleep(delay)
+        if not delay == 0:
+            print 'wait %fs' %(delay)
+            MonkeyRunner.sleep(delay)
