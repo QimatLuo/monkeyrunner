@@ -9,7 +9,7 @@ class Utility:
         self.device = MonkeyRunner.waitForConnection()
 
     def back(self, delay = 1):
-        print 'back, wait %ds' %(delay)
+        print 'back, wait %fs' %(delay)
         self.device.press('KEYCODE_BACK', MonkeyDevice.DOWN_AND_UP)
         MonkeyRunner.sleep(delay)
 
@@ -30,7 +30,7 @@ class Utility:
         x = pos['x']
         y = pos['y']
 
-        print 'click, %s (%d,%d), wait %ds' %(name, x, y, delay)
+        print 'click, %s (%d,%d), wait %fs' %(name, x, y, delay)
         self.device.touch(x, y, MonkeyDevice.DOWN_AND_UP)
         MonkeyRunner.sleep(delay)
 
@@ -48,7 +48,7 @@ class Utility:
         steps = args.get('steps', 10)
         delay = args.get('delay', 1)
 
-        print 'hold %s (%d, %d), %fs (%d), wait %ds' %(name, x, y, duration, steps, delay)
+        print 'hold %s (%d, %d), %fs (%d), wait %fs' %(name, x, y, duration, steps, delay)
         self.device.drag((x,y), (x,y), duration, steps)
         MonkeyRunner.sleep(delay)
 
@@ -83,3 +83,6 @@ class Utility:
         p = img.getRawPixel(x, y)
         print p
         return p == color
+    def sleep(self, delay = 1):
+        print 'wait %fs' %(delay)
+        MonkeyRunner.sleep(delay)
