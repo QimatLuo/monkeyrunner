@@ -28,20 +28,22 @@ class TapTitans:
             current = self.device.getProperty('am.current.comp.class')
             print current
 
-            i += 1
             if current == 'com.gamehivecorp.ghplugin.ImmersivePlayerNativeActivity':
                 self.util.click('fairy', 0.1)
                 self.util.click('close', 0.1)
                 if i % 100 == 0 :
                     self.util.click('ad watch', 0.1)
                     i = 1
-            elif current == 'com.android.launcher2.Launcher':
+                else:
+                    i += 1
+            elif current == 'com.android.launcher2.Launcher' or current == None:
                 i = 0
             else:
                 self.util.sleep(40)
                 self.util.back()
                 self.open()
                 self.util.sleep(10)
+                i = 100
 
     def test(self):
         self.util.click('ad watch', 0.1)
