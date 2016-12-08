@@ -13,6 +13,8 @@ class TapTitans:
             'fairy': { 'x': 0.5, 'y': 0.25 },
             'ad watch': { 'x': 0.6, 'y': 0.625 },
             'close': { 'x': 0.8825, 'y': 0.2 },
+            'money': { 'x': 0.9, 'y': 0.9 },
+            'ad close': { 'x': 0.85625, 'y': 0.1015625 },
         }
         self.util.colors = {
             'ad': (-1,33,33,33),
@@ -33,6 +35,7 @@ class TapTitans:
                 self.util.click('close', 0.1)
                 if i % 100 == 0 :
                     self.util.click('ad watch', 0.1)
+                    self.util.click('money', 0.1)
                     i = 1
                 else:
                     i += 1
@@ -43,6 +46,7 @@ class TapTitans:
                 self.util.back()
                 self.open()
                 self.util.sleep(10)
+                self.util.click('ad close', 0.1)
                 i = 100
 
     def test(self):
