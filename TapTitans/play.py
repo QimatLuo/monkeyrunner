@@ -21,9 +21,11 @@ class TapTitans:
             'skill5': { 'x': 0.75, 'y': 0.9 },
             'skill6': { 'x': 0.9, 'y': 0.9 },
             'ad close': { 'x': 0.85625, 'y': 0.1015625 },
+            'dead': { 'x': 0, 'y': 0 },
         }
         self.util.colors = {
             'ad': (-1,33,33,33),
+            'dead': (-1,0,0,0),
         }
 
     def open(self):
@@ -57,9 +59,14 @@ class TapTitans:
                 self.util.sleep(40)
                 self.util.back()
                 self.open()
-                self.util.sleep(10)
-                self.util.click('ad close', 0.1)
-                i = 300
+                self.util.sleep(1)
+                if self.util.pixel('dead'):
+                    self.device.shell('am force-stop ' + self.package)
+                    self.open()
+                    self.util.sleep(10)
+                else:
+                    self.util.click('ad close', 0.1)
+                    i = 300
 
     def test(self):
         self.util.click('ad watch', 0.1)
