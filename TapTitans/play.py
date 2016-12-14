@@ -28,8 +28,10 @@ class TapTitans:
             'dead': (-1,0,0,0),
         }
 
-    def open(self):
+    def open(self, sleep = 1):
+        print 'open app'
         self.device.startActivity(component = self.package + '/' + self.activity)
+        self.util.sleep(sleep)
 
     def play(self):
         self.open()
