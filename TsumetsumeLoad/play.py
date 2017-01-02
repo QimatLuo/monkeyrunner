@@ -35,9 +35,19 @@ class TsumeTsumeLoad:
         self.activity = 'com.unity3d.player.UnityPlayerActivity'
 
         self.util.positions = {
+            'close pause': { 'x': 0.9, 'y': 0.3 },
+            'pause': { 'x': 0.1, 'y': 0.01 },
+            'upgrade': { 'x': 0.7, 'y': 0.34 },
         }
         self.util.colors = {
         }
+
+        for y in range(5):
+            for x in range(5):
+                self.util.positions[str(x) + str(y)] = {
+                    'x': 0.19 + 0.15 * x,
+                    'y': 0.53 + 0.1 * y,
+                }
 
         self.pawn = {
             'fuhyo': open('fuhyo.txt', 'r').read().split('\n'),
@@ -90,6 +100,19 @@ class TsumeTsumeLoad:
 
             if error < 1600:
                 return key
+
+    def isAble(self, x, y):
+        if x < 0 or x > 4:
+            return False
+
+        if y < 0 or y > 4:
+            return False
+
+        try:
+            if self.board[y][x] == '':
+                return str(x) + str(y)
+        except Exception, e:
+            return False
 
     def open(self, sleep = 1):
         print 'open app'
@@ -167,12 +190,75 @@ class TsumeTsumeLoad:
             if len(''.join(row).replace('0', '')):
                 self.board[4][0].append(row)
 
+    def test(self, img):
+        self.parsePawn(img)
+        print self.board
+        target = None
+        for y in range(4):
+            for x in range(5):
+                if self.board[y][x] == 'osho_':
+                    target = [x, y]
+                    break
+            if target:
+                break
+        print target
+        self.util.click('close pause')
+        hand = self.board[4][0]
+        ans = None
+
+        possible = []
+        for y in range(3):
+            y-= 1
+            for x in range(3):
+                x -= 1
+                x = target[0] + x
+                y = target[1] + y
+                if self.isAble(x, y):
+                    possible.append([x, y])
+        print possible
+
+        if hand == '':
+            x = possible[0][0]
+            y = possible[0][1]
+            ans = self.isAble(x, y)
+            self.util.click(ans)
+            self.util.click('upgrade')
+        else:
+            self.util.click('04')
+            if hand == 'kakugyo':
+                for y in [-1, 1]:
+                    for x in [-1, 1]:
+                        x = target[0] + x
+                        y = target[1] + y
+                        ans = self.isAble(x, y)
+                        if ans:
+                            self.util.click(ans)
+            elif hand == 'keima':
+                for x in [-1, 1]:
+                    x = target[0] + x
+                    y = target[1] + 2
+                    ans = self.isAble(x, y)
+                    if ans:
+                        self.util.click(ans)
+            else:
+                x = target[0]
+                y = target[1] + 1
+                ans = self.isAble(x, y)
+                if not ans:
+                    x = possible[0][0]
+                    y = possible[0][1]
+                    ans = self.isAble(x, y)
+
+                self.util.click(ans)
+
+
 test = len(sys.argv) > 1
 self = TsumeTsumeLoad(test)
 if test:
     img = MonkeyRunner.loadImageFromFile('./1.png','png')
 else:
     img = self.device.takeSnapshot()
+    self.util.click('pause')
     img.writeToFile('./1.png')
 
 print '<body style="margin:0;background:black;color:white;"><pre>'
