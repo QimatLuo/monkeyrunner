@@ -1,12 +1,35 @@
-import datetime
+import time
+import re
 import sys
 sys.path.insert(0, '..')
 from utility import Utility
 from com.android.monkeyrunner import MonkeyRunner, MonkeyDevice
+from subprocess import call
+
+def bin(x):
+    """
+    bin(number) -> string
+
+    Stringifies an int or long in base 2.
+    """
+    if x < 0: 
+        return '-' + bin(-x)
+    out = []
+    if x == 0: 
+        out.append('0')
+    while x > 0:
+        out.append('01'[x & 1])
+        x >>= 1
+        pass
+    try: 
+        return '0b' + ''.join(reversed(out))
+    except NameError, ne2: 
+        out.reverse()
+    return '0b' + ''.join(out)
 
 class TsumeTsumeLoad:
-    def __init__(self):
-        self.util = Utility()
+    def __init__(self, noDevice = None):
+        self.util = Utility(noDevice = None)
         self.device = self.util.device
         self.package = 'jp.co.dig.tsumetsumelord'
         self.activity = 'com.unity3d.player.UnityPlayerActivity'
@@ -38,6 +61,14 @@ class TsumeTsumeLoad:
             'ryuo_': open('ryuo_.txt', 'r').read().split('\n'),
         }
 
+        self.board = [
+            [[],[],[],[],[]],
+            [[],[],[],[],[]],
+            [[],[],[],[],[]],
+            [[],[],[],[],[]],
+            [[],[],[],[],[]],
+        ]
+
     def open(self, sleep = 1):
         print 'open app'
         self.device.startActivity(component = self.package + '/' + self.activity)
@@ -46,14 +77,15 @@ class TsumeTsumeLoad:
     def play(self):
         self.open()
 
-    def board(self, img):
+    def setBoard(self, img):
         x = 91
         y = 626
         w = 618
         h = 492
         sub = img.getSubImage((x, y, w, h))
-        array = []
         origin = None
+        size = 123
+        shiftX = [0, 1, 1, 2, 3]
 
         for yi, y in enumerate(range(h)):
             row = []
@@ -62,68 +94,69 @@ class TsumeTsumeLoad:
                 p = sub.getRawPixel(x, y)
                 #print '%s %d %d,%d' %(p, i, x, y)
                 if reduce(lambda a, b: a + b, p[1:]) / len(p[1:]) < 10:
-                    row.append('*')
+                    row.append('1')
                 elif p[1] > p[2] and p[1] > p[3] and p[1] > 170 and p[2] > 170 and p[3] > 100: #general
-                    row.append('+')
+                    row.append('1')
                 else:
-                    row.append(' ')
+                    row.append('0')
 
-            array.append(row)
             if origin == None:
                 try:
-                    origin = [''.join(row).index('*     '), 0]
-                    array = array[yi-1:]
+                    ''.join(row).index('1000000000000000000000000000') #try this
+                    origin = yi - 1
                 except:
                     origin = None
+            else:
+                boardY = (yi - origin - 1) / size
+                for boardX in range(5):
+                    pos = size * boardX + shiftX[boardX]
+                    section = row[pos + 3:pos + size - 3]
+                    if len(''.join(section).replace('0', '')):
+                        self.board[boardY][boardX].append(section)
+                        
 
-        return array
+    def get(self, x, y):
+        pawn = self.board[y][x]
+        if len(pawn) < 100:
+            return ''
 
-    def get(self, array, x, y):
-        mapX = [
-            [0, 123],
-            [124, 247],
-            [247, 370],
-            [371, 494],
-            [495, 618],
-        ]
-
-        mapY = [
-            [0, 123],
-            [123, 246],
-            [246, 369],
-            [368, 491],
-        ]
-
-        X = mapX[x]
-        Y = mapY[y]
-
+        '''
+        print x,y
+        for row in pawn:
+            print ''.join(row)
+        '''
+            
         for key, value in self.pawn.iteritems():
             error = 0
-            for i, row in enumerate(array[Y[0]+7:Y[1]-11]):
-                arr = []
-                #print ''.join(row)[X[0]+3:X[1]-3]
-                for j, col in enumerate(row[X[0]+3:X[1]-3]):
-                    check = value[i][j] == col
-                    if check:
-                        arr.append('o')
-                    else:
-                        error += 1
-                        arr.append(' ')
-            if error < 2000:
+            minLen = min(len(pawn), len(value) - 1)
+
+            for i in range(minLen):
+                xor = int(''.join(pawn[i]), 2) ^ int(''.join(value[i]), 2)
+                error += len(re.sub('[^1]', '', bin(xor)))
+
+            if error < 1500:
                 return key
 
-    def test(self):
-        img = self.device.takeSnapshot()
-        img.writeToFile('./1.png')
-        '''
-        img = MonkeyRunner.loadImageFromFile('./1.png','png') 
-        '''
-        array = self.board(img)
+    def test(self, img):
+        self.setBoard(img)
         for y in range(4):
             row = []
             for x in range(5):
-                row.append(self.get(array, x, y))
+                parse = self.get(x, y)
+                if parse == None:
+                    call(['mv', '1.png', str(time.time()) + '.png'])
+
+                row.append(parse)
             print row
 
-self = TsumeTsumeLoad()
-self.test()
+test = len(sys.argv) > 1
+self = TsumeTsumeLoad(test)
+if test:
+    img = MonkeyRunner.loadImageFromFile('./1.png','png')
+else:
+    img = self.device.takeSnapshot()
+    img.writeToFile('./1.png')
+
+print '<body style="margin:0;background:black;color:white;"><pre>'
+self.test(img)
+print '</pre></body>'
