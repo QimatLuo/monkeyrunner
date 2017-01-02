@@ -40,6 +40,7 @@ class TsumeTsumeLoad:
             'upgrade': { 'x': 0.7, 'y': 0.34 },
         }
         self.util.colors = {
+            'pause': (-1,211,143,40),
         }
 
         for y in range(5):
@@ -71,13 +72,7 @@ class TsumeTsumeLoad:
             'ryuo_': open('ryuo_.txt', 'r').read().split('\n'),
         }
 
-        self.board = [
-            [[],[],[],[],[]],
-            [[],[],[],[],[]],
-            [[],[],[],[],[]],
-            [[],[],[],[],[]],
-            [[],[],[],[],[]],
-        ]
+        self.reset()
 
     def get(self, x, y):
         pawn = self.board[y][x]
@@ -98,7 +93,7 @@ class TsumeTsumeLoad:
                 xor = int(''.join(pawn[i]), 2) ^ int(''.join(value[i]), 2)
                 error += len(re.sub('[^1]', '', bin(xor)))
 
-            if error < 1600:
+            if error < 1700:
                 return key
 
     def isAble(self, x, y):
@@ -109,13 +104,21 @@ class TsumeTsumeLoad:
             return False
 
         try:
-            if self.board[y][x] == '':
-                return str(x) + str(y)
+            pawn = self.board[y][x]
         except Exception, e:
             return False
 
-    def move(self, x, y, name):
-        target = [x, y]
+        if pawn == '' or pawn == 'osho_':
+            return str(x) + str(y)
+
+    def move(self, xy, name):
+        if xy == '04':
+            seed = -1
+            xy = self.osho
+        else:
+            seed = 1
+
+        target = [int(xy[0]), int(xy[1])]
         able = []
 
         if name == 'osho_':
@@ -136,8 +139,8 @@ class TsumeTsumeLoad:
         elif name == 'ginsho':
             possible = [
                 [-1, -1],
-                [-1, 0],
                 [-1, 1],
+                [0, -1],
                 [1, -1],
                 [1, 1],
             ]
@@ -182,16 +185,16 @@ class TsumeTsumeLoad:
             possible = [
                 [-1, -1],
                 [-1, 0],
-                [-1, 1],
                 [0, -1],
                 [0, 1],
+                [1, -1],
                 [1, 0],
             ]
         elif name == 'kyosha':
             possible = [
-                [0, 1],
-                [0, 2],
-                [0, 3],
+                [0, -1],
+                [0, -2],
+                [0, -3],
             ]
         elif name == 'ryuma':
             possible = [
@@ -237,8 +240,8 @@ class TsumeTsumeLoad:
             return False
 
         for xy in possible:
-            x = target[0] + xy[0]
-            y = target[1] + xy[1]
+            x = target[0] + xy[0] * seed
+            y = target[1] + xy[1] * seed
             ans = self.isAble(x, y)
             if ans:
                 able.append(ans)
@@ -258,6 +261,12 @@ class TsumeTsumeLoad:
                 self.board[y][x] = parse
                 if parse == None:
                     call(['cp', '1.png', str(time.time()) + '.png'])
+                elif parse == '':
+                    continue
+                elif parse == 'osho_':
+                    self.osho = str(x) + str(y)
+                elif '_' not in parse:
+                    self.team.append(str(x) + str(y))
 
     def pixelParse(self, x, y, sub):
         i = sub.getRawPixelInt(x, y)
@@ -272,6 +281,17 @@ class TsumeTsumeLoad:
 
     def play(self):
         self.open()
+
+    def reset(self):
+        self.board = [
+            [[],[],[],[],[]],
+            [[],[],[],[],[]],
+            [[],[],[],[],[]],
+            [[],[],[],[],[]],
+            [[],[],[],[],[]],
+        ]
+
+        self.team = []
 
     def setBoard(self, img):
         x = 91
@@ -323,67 +343,51 @@ class TsumeTsumeLoad:
     def test(self, img):
         self.parsePawn(img)
         print self.board
-        target = None
-        for y in range(4):
-            for x in range(5):
-                if self.board[y][x] == 'osho_':
-                    target = [x, y]
-                    break
-            if target:
-                break
-        print 'target:', target
+        print 'target:', self.osho
         self.util.click('close pause')
         hand = self.board[4][0]
         ans = None
 
-        possible = self.move(target[0], target[1], 'osho_')
+        possible = self.move(self.osho, 'osho_')
         print 'possible:', possible
 
         if hand == '':
-            for y in range(4):
-                for x in range(5):
-                    able = self.move(x, y, self.board[y][x])
-                    if not able:
-                        continue
-
-                    #self.util.click(ans)
-                    #self.util.click('upgrade')
+            array = self.team
         else:
-            self.util.click('04')
-            if hand == 'kakugyo':
-                for y in [-1, 1]:
-                    for x in [-1, 1]:
-                        x = target[0] + x
-                        y = target[1] + y
-                        ans = self.isAble(x, y)
-                        if ans:
-                            self.util.click(ans)
-            elif hand == 'keima':
-                for x in [-1, 1]:
-                    x = target[0] + x
-                    y = target[1] + 2
-                    ans = self.isAble(x, y)
-                    if ans:
-                        self.util.click(ans)
-            else:
-                x = target[0]
-                y = target[1] + 1
-                ans = self.isAble(x, y)
-                if not ans:
-                    ans = possible[0]
+            array = ['04']
 
+        for xy in array:
+            x = int(xy[0])
+            y = int(xy[1])
+            able = self.move(xy, self.board[y][x])
+            if not able:
+                continue
+
+            inter = set(able) & set(possible)
+            if len(inter):
+                print self.board[y][x], x, y, inter
+                ans = list(inter)[0]
+                self.util.click(str(x) + str(y))
                 self.util.click(ans)
-
+                self.util.click('upgrade')
+                break
 
 test = len(sys.argv) > 1
 self = TsumeTsumeLoad(test)
 if test:
     img = MonkeyRunner.loadImageFromFile('./1.png','png')
+    print '<body style="margin:0;background:black;color:white;"><pre>'
+    self.test(img)
+    print '</pre></body>'
 else:
-    img = self.device.takeSnapshot()
-    self.util.click('pause')
-    img.writeToFile('./1.png')
-
-print '<body style="margin:0;background:black;color:white;"><pre>'
-self.test(img)
-print '</pre></body>'
+    self.open()
+    current = self.device.getProperty('am.current.comp.class')
+    while  current == self.activity:
+        img = self.device.takeSnapshot()
+        if self.util.pixel('pause', img):
+            self.util.click('pause')
+            img.writeToFile('./1.png')
+            self.test(img)
+            self.reset()
+            self.util.sleep(8)
+        current = self.device.getProperty('am.current.comp.class')
