@@ -114,6 +114,136 @@ class TsumeTsumeLoad:
         except Exception, e:
             return False
 
+    def move(self, x, y, name):
+        target = [x, y]
+        able = []
+
+        if name == 'osho_':
+            possible = [
+                [-1, -1],
+                [-1, 0],
+                [-1, 1],
+                [0, -1],
+                [0, 1],
+                [1, -1],
+                [1, 0],
+                [1, 1],
+            ]
+        elif name == 'fuhyo':
+            possible = [
+                [0, -1],
+            ]
+        elif name == 'ginsho':
+            possible = [
+                [-1, -1],
+                [-1, 0],
+                [-1, 1],
+                [1, -1],
+                [1, 1],
+            ]
+        elif name == 'hisha':
+            possible = [
+                [-1, 0],
+                [0, -1],
+                [0, 1],
+                [1, 0],
+                [-2, 0],
+                [-3, 0],
+                [-4, 0],
+                [0, -2],
+                [0, -3],
+                [0, 2],
+                [0, 3],
+                [2, 0],
+                [3, 0],
+                [4, 0],
+            ]
+        elif name == 'kakugyo':
+            possible = [
+                [-1, -1],
+                [-1, 1],
+                [1, -1],
+                [1, 1],
+                [-2, -2],
+                [-3, -3],
+                [-2, 2],
+                [-3, 3],
+                [2, -2],
+                [3, -3],
+                [2, 2],
+                [3, 3],
+            ]
+        elif name == 'keima':
+            possible = [
+                [-1, 2],
+                [1, 2],
+            ]
+        elif name == 'kinsho':
+            possible = [
+                [-1, -1],
+                [-1, 0],
+                [-1, 1],
+                [0, -1],
+                [0, 1],
+                [1, 0],
+            ]
+        elif name == 'kyosha':
+            possible = [
+                [0, 1],
+                [0, 2],
+                [0, 3],
+            ]
+        elif name == 'ryuma':
+            possible = [
+                [-1, -1],
+                [-1, 0],
+                [-1, 1],
+                [0, -1],
+                [0, 1],
+                [1, -1],
+                [1, 0],
+                [1, 1],
+                [-2, -2],
+                [-3, -3],
+                [-2, 2],
+                [-3, 3],
+                [2, -2],
+                [3, -3],
+                [2, 2],
+                [3, 3],
+            ]
+        elif name == 'ryuo':
+            possible = [
+                [-1, -1],
+                [-1, 0],
+                [-1, 1],
+                [0, -1],
+                [0, 1],
+                [1, -1],
+                [1, 0],
+                [1, 1],
+                [-2, 0],
+                [-3, 0],
+                [-4, 0],
+                [0, -2],
+                [0, -3],
+                [0, 2],
+                [0, 3],
+                [2, 0],
+                [3, 0],
+                [4, 0],
+            ]
+        else:
+            return False
+
+        for xy in possible:
+            x = target[0] + xy[0]
+            y = target[1] + xy[1]
+            ans = self.isAble(x, y)
+            if ans:
+                able.append(ans)
+        return able
+
     def open(self, sleep = 1):
         print 'open app'
         self.device.startActivity(component = self.package + '/' + self.activity)
@@ -201,28 +331,23 @@ class TsumeTsumeLoad:
                     break
             if target:
                 break
-        print target
+        print 'target:', target
         self.util.click('close pause')
         hand = self.board[4][0]
         ans = None
 
-        possible = []
-        for y in range(3):
-            y-= 1
-            for x in range(3):
-                x -= 1
-                x = target[0] + x
-                y = target[1] + y
-                if self.isAble(x, y):
-                    possible.append([x, y])
-        print possible
+        possible = self.move(target[0], target[1], 'osho_')
+        print 'possible:', possible
 
         if hand == '':
-            x = possible[0][0]
-            y = possible[0][1]
-            ans = self.isAble(x, y)
-            self.util.click(ans)
-            self.util.click('upgrade')
+            for y in range(4):
+                for x in range(5):
+                    able = self.move(x, y, self.board[y][x])
+                    if not able:
+                        continue
+
+                    #self.util.click(ans)
+                    #self.util.click('upgrade')
         else:
             self.util.click('04')
             if hand == 'kakugyo':
@@ -245,9 +370,7 @@ class TsumeTsumeLoad:
                 y = target[1] + 1
                 ans = self.isAble(x, y)
                 if not ans:
-                    x = possible[0][0]
-                    y = possible[0][1]
-                    ans = self.isAble(x, y)
+                    ans = possible[0]
 
                 self.util.click(ans)
 
