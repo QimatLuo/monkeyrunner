@@ -69,10 +69,53 @@ class TsumeTsumeLoad:
             [[],[],[],[],[]],
         ]
 
+    def get(self, x, y):
+        pawn = self.board[y][x]
+        if len(pawn) < 100:
+            return ''
+
+        '''
+        print x,y
+        for row in pawn:
+            print ''.join(row)
+        '''
+
+        for key, value in self.pawn.iteritems():
+            error = 0
+            minLen = min(len(pawn), len(value) - 1)
+
+            for i in range(minLen):
+                xor = int(''.join(pawn[i]), 2) ^ int(''.join(value[i]), 2)
+                error += len(re.sub('[^1]', '', bin(xor)))
+
+            if error < 1600:
+                return key
+
     def open(self, sleep = 1):
         print 'open app'
         self.device.startActivity(component = self.package + '/' + self.activity)
         self.util.sleep(sleep)
+
+    def parsePawn(self, img):
+        self.setBoard(img)
+        self.setHand(img)
+        for y, row in enumerate(self.board):
+            for x, col in enumerate(row):
+                parse = self.get(x, y)
+                self.board[y][x] = parse
+                if parse == None:
+                    call(['cp', '1.png', str(time.time()) + '.png'])
+
+    def pixelParse(self, x, y, sub):
+        i = sub.getRawPixelInt(x, y)
+        p = sub.getRawPixel(x, y)
+        #print '%s %d %d,%d' %(p, i, x, y)
+        if reduce(lambda a, b: a + b, p[1:]) / len(p[1:]) < 10:
+            return '1'
+        elif p[1] > p[2] and p[1] > p[3] and p[1] > 170 and p[2] > 170 and p[3] > 100: #general
+            return '1'
+        else:
+            return '0'
 
     def play(self):
         self.open()
@@ -123,51 +166,6 @@ class TsumeTsumeLoad:
 
             if len(''.join(row).replace('0', '')):
                 self.board[4][0].append(row)
-
-    def pixelParse(self, x, y, sub):
-        i = sub.getRawPixelInt(x, y)
-        p = sub.getRawPixel(x, y)
-        #print '%s %d %d,%d' %(p, i, x, y)
-        if reduce(lambda a, b: a + b, p[1:]) / len(p[1:]) < 10:
-            return '1'
-        elif p[1] > p[2] and p[1] > p[3] and p[1] > 170 and p[2] > 170 and p[3] > 100: #general
-            return '1'
-        else:
-            return '0'
-                        
-    def get(self, x, y):
-        pawn = self.board[y][x]
-        if len(pawn) < 100:
-            return ''
-
-        '''
-        print x,y
-        for row in pawn:
-            print ''.join(row)
-        '''
-            
-        for key, value in self.pawn.iteritems():
-            error = 0
-            minLen = min(len(pawn), len(value) - 1)
-
-            for i in range(minLen):
-                xor = int(''.join(pawn[i]), 2) ^ int(''.join(value[i]), 2)
-                error += len(re.sub('[^1]', '', bin(xor)))
-
-            if error < 1600:
-                return key
-
-    def test(self, img):
-        self.setBoard(img)
-        self.setHand(img)
-        for y, row in enumerate(self.board):
-            for x, col in enumerate(row):
-                parse = self.get(x, y)
-                if parse == None:
-                    call(['cp', '1.png', str(time.time()) + '.png'])
-
-                print parse, ',',
-            print ''
 
 test = len(sys.argv) > 1
 self = TsumeTsumeLoad(test)
