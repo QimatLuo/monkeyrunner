@@ -111,14 +111,13 @@ class TsumeTsumeLoad:
         if pawn == '' or pawn == 'osho_':
             return str(x) + str(y)
 
-    def move(self, xy, name):
-        if xy == '04':
-            seed = -1
-            xy = self.osho
+    def move(self, name):
+        if name == 'osho_':
+            reverse = 1
         else:
-            seed = 1
+            reverse = -1
 
-        target = [int(xy[0]), int(xy[1])]
+        target = [int(self.osho[0]), int(self.osho[1])]
         able = []
 
         if name == 'osho_':
@@ -131,6 +130,8 @@ class TsumeTsumeLoad:
                 [1, -1],
                 [1, 0],
                 [1, 1],
+                [-1, 2],
+                [1, 2],
             ]
         elif name == 'fuhyo':
             possible = [
@@ -240,8 +241,8 @@ class TsumeTsumeLoad:
             return False
 
         for xy in possible:
-            x = target[0] + xy[0] * seed
-            y = target[1] + xy[1] * seed
+            x = target[0] + xy[0] * reverse
+            y = target[1] + xy[1] * reverse
             ans = self.isAble(x, y)
             if ans:
                 able.append(ans)
@@ -262,6 +263,7 @@ class TsumeTsumeLoad:
                 if parse == None:
                     call(['cp', '1.png', str(time.time()) + '.png'])
                 elif parse == '':
+                    self.emptySolt.append(str(x) + str(y))
                     continue
                 elif parse == 'osho_':
                     self.osho = str(x) + str(y)
@@ -292,6 +294,7 @@ class TsumeTsumeLoad:
         ]
 
         self.team = []
+        self.emptySolt = []
 
     def setBoard(self, img):
         x = 91
@@ -348,9 +351,6 @@ class TsumeTsumeLoad:
         hand = self.board[4][0]
         ans = None
 
-        possible = self.move(self.osho, 'osho_')
-        print 'possible:', possible
-
         if hand == '':
             array = self.team
         else:
@@ -359,13 +359,18 @@ class TsumeTsumeLoad:
         for xy in array:
             x = int(xy[0])
             y = int(xy[1])
-            able = self.move(xy, self.board[y][x])
-            if not able:
+
+            kill = self.move(self.board[y][x])
+            if not kill:
                 continue
 
-            inter = set(able) & set(possible)
+            king = self.move('osho_')
+
+            inter = set(kill) & set(king)
             if len(inter):
-                print self.board[y][x], x, y, inter
+                print self.board[y][x], x, y, kill
+                print 'king:', king
+                print 'inter:',  inter
                 ans = list(inter)[0]
                 self.util.click(str(x) + str(y))
                 self.util.click(ans)
