@@ -51,25 +51,27 @@ class TsumeTsumeLoad:
                 }
 
         self.pawn = {
-            'fuhyo': open('fuhyo.txt', 'r').read().split('\n'),
-            'fuhyo_': open('fuhyo_.txt', 'r').read().split('\n'),
-            'ginsho': open('ginsho.txt', 'r').read().split('\n'),
-            'ginsho_': open('ginsho_.txt', 'r').read().split('\n'),
-            'hisha': open('hisha.txt', 'r').read().split('\n'),
-            'hisha_': open('hisha_.txt', 'r').read().split('\n'),
-            'kakugyo': open('kakugyo.txt', 'r').read().split('\n'),
-            'kakugyo_': open('kakugyo_.txt', 'r').read().split('\n'),
-            'keima': open('keima.txt', 'r').read().split('\n'),
-            'keima_': open('keima_.txt', 'r').read().split('\n'),
-            'kinsho': open('kinsho.txt', 'r').read().split('\n'),
-            'kinsho_': open('kinsho_.txt', 'r').read().split('\n'),
-            'kyosha': open('kyosha.txt', 'r').read().split('\n'),
-            'kyosha_': open('kyosha_.txt', 'r').read().split('\n'),
-            'osho_': open('osho_.txt', 'r').read().split('\n'),
-            'ryuma': open('ryuma.txt', 'r').read().split('\n'),
-            'ryuma_': open('ryuma_.txt', 'r').read().split('\n'),
-            'ryuo': open('ryuo.txt', 'r').read().split('\n'),
-            'ryuo_': open('ryuo_.txt', 'r').read().split('\n'),
+            'fuhyo': open('sample/fuhyo.txt', 'r').read().split('\n'),
+            'fuhyo_': open('sample/fuhyo_.txt', 'r').read().split('\n'),
+            'ginsho': open('sample/ginsho.txt', 'r').read().split('\n'),
+            'ginsho_': open('sample/ginsho_.txt', 'r').read().split('\n'),
+            'hisha': open('sample/hisha.txt', 'r').read().split('\n'),
+            'hisha_': open('sample/hisha_.txt', 'r').read().split('\n'),
+            'kakugyo': open('sample/kakugyo.txt', 'r').read().split('\n'),
+            'kakugyo2': open('sample/kakugyo2.txt', 'r').read().split('\n'),
+            'kakugyo_': open('sample/kakugyo_.txt', 'r').read().split('\n'),
+            'keima': open('sample/keima.txt', 'r').read().split('\n'),
+            'keima_': open('sample/keima_.txt', 'r').read().split('\n'),
+            'kinsho': open('sample/kinsho.txt', 'r').read().split('\n'),
+            'kinsho_': open('sample/kinsho_.txt', 'r').read().split('\n'),
+            'kyosha': open('sample/kyosha.txt', 'r').read().split('\n'),
+            'kyosha_': open('sample/kyosha_.txt', 'r').read().split('\n'),
+            'osho_': open('sample/osho_.txt', 'r').read().split('\n'),
+            'ryuma': open('sample/ryuma.txt', 'r').read().split('\n'),
+            'ryuma_': open('sample/ryuma_.txt', 'r').read().split('\n'),
+            'ryuo': open('sample/ryuo.txt', 'r').read().split('\n'),
+            'ryuo_': open('sample/ryuo_.txt', 'r').read().split('\n'),
+            'ryuo_2': open('sample/ryuo_2.txt', 'r').read().split('\n'),
         }
 
         self.reset()
@@ -94,7 +96,7 @@ class TsumeTsumeLoad:
                 error += len(re.sub('[^1]', '', bin(xor)))
 
             if error < 1700:
-                return key
+                return re.sub('\d', '', key)
 
     def isAble(self, x, y):
         if x < 0 or x > 4:
