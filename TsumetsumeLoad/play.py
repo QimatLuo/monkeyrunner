@@ -113,14 +113,17 @@ class TsumeTsumeLoad:
         if pawn == '' or pawn == 'osho_':
             return str(x) + str(y)
 
-    def move(self, name):
+    def move(self, xy, name):
         if name == 'osho_':
             reverse = 1
         else:
             reverse = -1
 
-        target = [int(self.osho[0]), int(self.osho[1])]
+        target = [int(xy[0]), int(xy[1])]
         able = []
+
+        if xy == '04':
+            return self.emptySolt
 
         if name == 'osho_':
             possible = [
@@ -362,13 +365,17 @@ class TsumeTsumeLoad:
             x = int(xy[0])
             y = int(xy[1])
 
-            kill = self.move(self.board[y][x])
+            kill = self.move(self.osho, self.board[y][x])
             if not kill:
                 continue
 
-            king = self.move('osho_')
+            able = self.move(xy, self.board[y][x])
+            if not able:
+                continue
 
-            inter = set(kill) & set(king)
+            king = self.move(self.osho, 'osho_')
+
+            inter = set(kill) & set(king) & set(able)
             if len(inter):
                 print self.board[y][x], x, y, kill
                 print 'king:', king
