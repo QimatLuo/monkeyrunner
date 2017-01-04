@@ -1,3 +1,4 @@
+import os
 import time
 import re
 import sys
@@ -50,29 +51,10 @@ class TsumeTsumeLoad:
                     'y': 0.53 + 0.1 * y,
                 }
 
-        self.pawn = {
-            'fuhyo': open('sample/fuhyo.txt', 'r').read().split('\n'),
-            'fuhyo_': open('sample/fuhyo_.txt', 'r').read().split('\n'),
-            'ginsho': open('sample/ginsho.txt', 'r').read().split('\n'),
-            'ginsho_': open('sample/ginsho_.txt', 'r').read().split('\n'),
-            'hisha': open('sample/hisha.txt', 'r').read().split('\n'),
-            'hisha_': open('sample/hisha_.txt', 'r').read().split('\n'),
-            'kakugyo': open('sample/kakugyo.txt', 'r').read().split('\n'),
-            'kakugyo2': open('sample/kakugyo2.txt', 'r').read().split('\n'),
-            'kakugyo_': open('sample/kakugyo_.txt', 'r').read().split('\n'),
-            'keima': open('sample/keima.txt', 'r').read().split('\n'),
-            'keima_': open('sample/keima_.txt', 'r').read().split('\n'),
-            'kinsho': open('sample/kinsho.txt', 'r').read().split('\n'),
-            'kinsho_': open('sample/kinsho_.txt', 'r').read().split('\n'),
-            'kyosha': open('sample/kyosha.txt', 'r').read().split('\n'),
-            'kyosha_': open('sample/kyosha_.txt', 'r').read().split('\n'),
-            'osho_': open('sample/osho_.txt', 'r').read().split('\n'),
-            'ryuma': open('sample/ryuma.txt', 'r').read().split('\n'),
-            'ryuma_': open('sample/ryuma_.txt', 'r').read().split('\n'),
-            'ryuo': open('sample/ryuo.txt', 'r').read().split('\n'),
-            'ryuo_': open('sample/ryuo_.txt', 'r').read().split('\n'),
-            'ryuo_2': open('sample/ryuo_2.txt', 'r').read().split('\n'),
-        }
+        self.pawn = {}
+        path = 'sample/'
+        for name in os.listdir(path):
+            self.pawn[name[0:-4]] = open(path + name, 'r').read().split('\n')
 
         self.reset()
 
@@ -379,6 +361,7 @@ class TsumeTsumeLoad:
             if len(inter):
                 print self.board[y][x], x, y, kill
                 print 'king:', king
+                print 'able:', able
                 print 'inter:',  inter
                 ans = list(inter)[0]
                 self.util.click(str(x) + str(y))
