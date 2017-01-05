@@ -58,10 +58,15 @@ class TsumeTsumeLoad:
 
         self.reset()
 
-    def get(self, x, y):
+    def get(self, x, y, img):
         pawn = self.board[y][x]
         if len(pawn) < 100:
-            return ''
+            pos = self.util.position(str(x) + str(y))
+            i = img.getRawPixelInt(pos['x'], pos['y'])
+            if -10406319 >= i and i >= -10603443:
+                return True
+            else:
+                return False
 
         '''
         print x,y
@@ -92,14 +97,61 @@ class TsumeTsumeLoad:
         except Exception, e:
             return False
 
-        if pawn == '' or pawn == 'osho_':
+        if type(pawn) is bool or pawn == 'osho_':
             return str(x) + str(y)
 
-    def move(self, xy, name):
-        if name == 'osho_':
-            reverse = 1
+    def isCorvered(self, target):
+        for xy in self.team:
+            x = int(xy[0])
+            y = int(xy[1])
+            able = self.move(xy, self.board[y][x])
+            if target in able:
+                return True
+
+    def linearCheck(self, a, b):
+        ax = int(a[0])
+        ay = int(a[1])
+        name = self.board[ay][ax]
+        if not (name == 'hisha' or name == 'ryuo' or name == 'kakugyo' or name == 'ryuma' or name == 'kyosha'):
+            return True
+
+        bx = int(b[0])
+        by = int(b[1])
+        ix = 1 if ax < bx else -1
+        iy = 1 if ay < by else -1
+
+        if ax == bx:
+            loop = True
+            while loop:
+                ay += iy
+
+                if ay == by:
+                    loop = False
+                elif not type(self.board[ay][ax]) is bool:
+                    return False
+        elif ay == by:
+            loop = True
+            while loop:
+                ax += ix
+
+                if ax == bx:
+                    loop = False
+                elif not type(self.board[ay][ax]) is bool:
+                    return False
         else:
-            reverse = -1
+            loop = True
+            while loop:
+                ax += ix
+                ay += iy
+
+                if ax == bx and ay == by:
+                    loop = False
+                elif not type(self.board[ay][ax]) is bool:
+                    return False
+        return True
+
+    def move(self, xy, name):
+        reverse = 1 if name == 'osho_' else -1
 
         target = [int(xy[0]), int(xy[1])]
         able = []
@@ -166,8 +218,8 @@ class TsumeTsumeLoad:
             ]
         elif name == 'keima':
             possible = [
-                [-1, 2],
-                [1, 2],
+                [-1, -2],
+                [1, -2],
             ]
         elif name == 'kinsho':
             possible = [
@@ -243,19 +295,23 @@ class TsumeTsumeLoad:
     def parsePawn(self, img):
         self.setBoard(img)
         self.setHand(img)
+        error = 0
         for y, row in enumerate(self.board):
             for x, col in enumerate(row):
-                parse = self.get(x, y)
+                parse = self.get(x, y, img)
                 self.board[y][x] = parse
                 if parse == None:
-                    call(['cp', '1.png', str(time.time()) + '.png'])
-                elif parse == '':
+                    error += 1
+                elif type(parse) is bool:
                     self.emptySolt.append(str(x) + str(y))
                     continue
                 elif parse == 'osho_':
                     self.osho = str(x) + str(y)
                 elif '_' not in parse:
                     self.team.append(str(x) + str(y))
+
+        if error == 1:
+            call(['cp', '1.png', str(time.time()) + '.png'])
 
     def pixelParse(self, x, y, sub):
         i = sub.getRawPixelInt(x, y)
@@ -332,13 +388,15 @@ class TsumeTsumeLoad:
 
     def test(self, img):
         self.parsePawn(img)
+        self.util.click('close pause')
         print self.board
         print 'target:', self.osho
-        self.util.click('close pause')
+        king = self.move(self.osho, 'osho_')
+        print 'target move:', king
         hand = self.board[4][0]
         ans = None
 
-        if hand == '':
+        if type(hand) is bool:
             array = self.team
         else:
             array = ['04']
@@ -346,28 +404,45 @@ class TsumeTsumeLoad:
         for xy in array:
             x = int(xy[0])
             y = int(xy[1])
+            name = self.board[y][x]
+            print name, x, y
 
-            kill = self.move(self.osho, self.board[y][x])
+            kill = self.move(self.osho, name)
             if not kill:
                 continue
+            print 'kill:', kill
 
-            able = self.move(xy, self.board[y][x])
+            able = self.move(xy, name)
             if not able:
                 continue
-
-            king = self.move(self.osho, 'osho_')
+            print 'able:', able
+            for xy in able:
+                name = self.upgrade(xy, name)
+                if self.osho in self.move(xy, name):
+                    kill.append(xy)
 
             inter = set(kill) & set(king) & set(able)
-            if len(inter):
-                print self.board[y][x], x, y, kill
-                print 'king:', king
-                print 'able:', able
-                print 'inter:',  inter
-                ans = list(inter)[0]
-                self.util.click(str(x) + str(y))
-                self.util.click(ans)
-                self.util.click('upgrade')
-                break
+            print 'inter:',  inter
+            for ans in list(inter):
+                if self.linearCheck(str(x) + str(y), ans):
+                    self.util.click(str(x) + str(y))
+                    self.util.click(ans)
+                    self.util.click('upgrade')
+                    return True
+
+    def upgrade(self, xy, name):
+        x = int(xy[0])
+        y = int(xy[1])
+        if not self.board[y][x] == True:
+            return name
+
+        if name == 'hisha':
+            return 'ryuo'
+        elif name == 'kakugyo':
+            return 'ryuma'
+        else:
+            return 'kinsho'
+
 
 test = len(sys.argv) > 1
 self = TsumeTsumeLoad(test)
@@ -380,6 +455,7 @@ else:
     self.open()
     current = self.device.getProperty('am.current.comp.class')
     while  current == self.activity:
+        print 'takeSnapshot...'
         img = self.device.takeSnapshot()
         if self.util.pixel('pause', img):
             self.util.click('pause')
