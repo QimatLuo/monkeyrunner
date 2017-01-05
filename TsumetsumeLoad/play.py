@@ -150,8 +150,8 @@ class TsumeTsumeLoad:
                     return False
         return True
 
-    def move(self, xy, name):
-        reverse = 1 if name == 'osho_' else -1
+    def move(self, xy, name, reverse = False):
+        reverse = -1 if reverse else 1
 
         target = [int(xy[0]), int(xy[1])]
         able = []
@@ -374,7 +374,6 @@ class TsumeTsumeLoad:
         w = 117
         h = 117
         sub = img.getSubImage((x, y, w, h))
-        sub.writeToFile('./sub.png')
         self.board[4] = [[]]
 
         for y in range(h):
@@ -407,24 +406,26 @@ class TsumeTsumeLoad:
             name = self.board[y][x]
             print name, x, y
 
-            kill = self.move(self.osho, name)
-            if not kill:
-                continue
+            kill = self.move(self.osho, name, True)
             print 'kill:', kill
 
             able = self.move(xy, name)
             if not able:
                 continue
             print 'able:', able
-            for xy in able:
-                name = self.upgrade(xy, name)
-                if self.osho in self.move(xy, name):
-                    kill.append(xy)
+            if type(hand) is bool:
+                for xy in able:
+                    name = self.upgrade(xy, name)
+                    if self.osho in self.move(xy, name):
+                        print 'add kill', xy
+                        kill.append(xy)
 
+            if not kill:
+                continue
             inter = set(kill) & set(king) & set(able)
             print 'inter:',  inter
             for ans in list(inter):
-                if self.linearCheck(str(x) + str(y), ans):
+                if (not type(hand) is bool) or self.linearCheck(str(x) + str(y), ans):
                     self.util.click(str(x) + str(y))
                     self.util.click(ans)
                     self.util.click('upgrade')
@@ -460,7 +461,10 @@ else:
         if self.util.pixel('pause', img):
             self.util.click('pause')
             img.writeToFile('./1.png')
-            self.test(img)
+            if self.test(img):
+                self.util.sleep(8)
+            else:
+                img.writeToFile('./2.png')
+                self.util.sleep(1)
             self.reset()
-            self.util.sleep(8)
         current = self.device.getProperty('am.current.comp.class')
