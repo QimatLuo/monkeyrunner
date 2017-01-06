@@ -37,11 +37,15 @@ class TsumeTsumeLoad:
 
         self.util.positions = {
             'close pause': { 'x': 0.9, 'y': 0.3 },
+            'done': { 'x': 0.515, 'y': 0.9375 },
             'pause': { 'x': 0.1, 'y': 0.01 },
+            'stage': { 'x': 0.0525, 'y': 0.16 },
             'upgrade': { 'x': 0.7, 'y': 0.34 },
         }
         self.util.colors = {
+            'done': (-1,255,255,255),
             'pause': (-1,211,143,40),
+            'stage': (-1,255,255,255),
         }
 
         for y in range(5):
@@ -467,4 +471,20 @@ else:
                 img.writeToFile('./2.png')
                 self.util.sleep(1)
             self.reset()
+        elif self.util.pixel('done', img):
+            self.util.click('done')
+        elif self.util.pixel('stage', img):
+            self.device.touch(400, 880, MonkeyDevice.DOWN_AND_UP)
+            self.util.sleep(2)
+            self.device.touch(200, 380, MonkeyDevice.DOWN_AND_UP)
+            self.util.sleep(2)
+            self.device.touch(200, 380, MonkeyDevice.DOWN_AND_UP)
+            self.util.sleep(2)
+            self.device.touch(570, 888, MonkeyDevice.DOWN_AND_UP)
+            self.util.sleep(2)
+            self.device.touch(400, 1050, MonkeyDevice.DOWN_AND_UP)
+            self.util.sleep(2)
+            self.device.touch(555, 720, MonkeyDevice.DOWN_AND_UP)
+            self.util.sleep(2)
+
         current = self.device.getProperty('am.current.comp.class')
