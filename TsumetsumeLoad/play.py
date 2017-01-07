@@ -36,16 +36,30 @@ class TsumeTsumeLoad:
         self.activity = 'com.unity3d.player.UnityPlayerActivity'
 
         self.util.positions = {
-            'close pause': { 'x': 0.9, 'y': 0.3 },
+            'close pause': { 'x': 0.89375, 'y': 0.2953125 },
             'done': { 'x': 0.515, 'y': 0.9375 },
+            'lose': { 'x': 0.325, 'y': 0.58203125 },
+            'lose ok': { 'x': 0.5, 'y': 0.58203125 },
+            'no': { 'x': 0.3125, 'y': 0.6640625 },
             'pause': { 'x': 0.1, 'y': 0.01 },
             'stage': { 'x': 0.0525, 'y': 0.16 },
+            'step1': { 'x': 0.5, 'y': 0.6875 },
+            'step2': { 'x': 0.25, 'y': 0.296875 },
+            'step3': { 'x': 0.7125, 'y': 0.69375 },
+            'step4': { 'x': 0.5, 'y': 0.8203125 },
+            'step5': { 'x': 0.69375, 'y': 0.5625 },
+            'title ok': { 'x': 0.5, 'y': 0.625 },
+            'title': { 'x': 0.095, 'y': 0.5 },
             'upgrade': { 'x': 0.7, 'y': 0.34 },
         }
         self.util.colors = {
+            'close pause': (-1,255,255,254),
             'done': (-1,255,255,255),
+            'done disabled': (-1,127,127,127),
+            'lose': (-1,255,255,255),
             'pause': (-1,211,143,40),
             'stage': (-1,255,255,255),
+            'title': (-1,207,201,139),
         }
 
         for y in range(5):
@@ -471,20 +485,24 @@ else:
                 img.writeToFile('./2.png')
                 self.util.sleep(1)
             self.reset()
+        elif self.util.pixel('close pause', img):
+            self.util.click('close pause')
         elif self.util.pixel('done', img):
             self.util.click('done')
+        elif self.util.pixel('done', 'done disabled', img):
+            self.util.click('no')
+            self.util.click('done')
+        elif self.util.pixel('title', img):
+            self.util.click('title ok')
+        elif self.util.pixel('lose', img):
+            self.util.click('lose')
+            self.util.click('lose ok')
         elif self.util.pixel('stage', img):
-            self.device.touch(400, 880, MonkeyDevice.DOWN_AND_UP)
-            self.util.sleep(2)
-            self.device.touch(200, 380, MonkeyDevice.DOWN_AND_UP)
-            self.util.sleep(2)
-            self.device.touch(200, 380, MonkeyDevice.DOWN_AND_UP)
-            self.util.sleep(2)
-            self.device.touch(570, 888, MonkeyDevice.DOWN_AND_UP)
-            self.util.sleep(2)
-            self.device.touch(400, 1050, MonkeyDevice.DOWN_AND_UP)
-            self.util.sleep(2)
-            self.device.touch(555, 720, MonkeyDevice.DOWN_AND_UP)
-            self.util.sleep(2)
+            self.util.click('step1', 2)
+            self.util.click('step2', 2)
+            self.util.click('step2', 2)
+            self.util.click('step3', 2)
+            self.util.click('step4', 2)
+            self.util.click('step5', 2)
 
         current = self.device.getProperty('am.current.comp.class')
