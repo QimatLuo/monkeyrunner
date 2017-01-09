@@ -103,7 +103,7 @@ class TsumeTsumeLoad:
             if error < 1700:
                 return re.sub('\d', '', key)
 
-    def isAble(self, x, y):
+    def isAble(self, x, y, name):
         if x < 0 or x > 4:
             return False
 
@@ -115,8 +115,13 @@ class TsumeTsumeLoad:
         except Exception, e:
             return False
 
-        if type(pawn) is bool or pawn == 'osho_':
+        if type(pawn) is bool:
             return str(x) + str(y)
+
+        if '_' in pawn and '_' in name:
+            return False
+
+        return str(x) + str(y)
 
     def isCorvered(self, target):
         for xy in self.team:
@@ -187,8 +192,6 @@ class TsumeTsumeLoad:
                 [1, -1],
                 [1, 0],
                 [1, 1],
-                [-1, 2],
-                [1, 2],
             ]
         elif name == 'fuhyo':
             possible = [
@@ -300,7 +303,7 @@ class TsumeTsumeLoad:
         for xy in possible:
             x = target[0] + xy[0] * reverse
             y = target[1] + xy[1] * reverse
-            ans = self.isAble(x, y)
+            ans = self.isAble(x, y, name)
             if ans:
                 able.append(ans)
         return able
@@ -403,12 +406,36 @@ class TsumeTsumeLoad:
             if len(''.join(row).replace('0', '')):
                 self.board[4][0].append(row)
 
+    def allCorvered(self, killer, targetAble):
+        teamCorvered = []
+        for xy in self.team:
+            if xy == killer:
+                continue
+            x = int(xy[0])
+            y = int(xy[1])
+            teamCorvered.extend(self.move(xy, self.board[y][x]))
+
+        x = int(killer[0])
+        y = int(killer[1])
+        name = self.board[y][x]
+        kill = self.move(self.osho, name, True)
+        print 'targetAble', targetAble
+        print 'teamCorvered', teamCorvered
+        for xy in kill:
+            print 'kill:', xy
+            killCorvered = self.move(xy, name)
+            print 'killCorvered', killCorvered
+            inter = set(teamCorvered + killCorvered) & set(targetAble)
+            print 'test ANS:', xy, inter
+            if len(inter) == len(targetAble):
+                return xy
+
     def test(self, img):
         self.parsePawn(img)
         self.util.click('close pause')
         print self.board
         print 'target:', self.osho
-        king = self.move(self.osho, 'osho_')
+        king = [self.osho] + self.move(self.osho, 'osho_')
         print 'target move:', king
         hand = self.board[4][0]
         ans = None
@@ -423,6 +450,8 @@ class TsumeTsumeLoad:
             y = int(xy[1])
             name = self.board[y][x]
             print name, x, y
+
+            print self.allCorvered(xy, king)
 
             kill = self.move(self.osho, name, True)
             print 'kill:', kill
