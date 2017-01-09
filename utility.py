@@ -2,13 +2,18 @@ from com.android.monkeyrunner import MonkeyRunner, MonkeyDevice
 from subprocess import call
 
 class Utility:
-    def __init__(self):
+    def __init__(self, noDevice = None):
         self.load = {}
-        call(["adb", "devices"])
-        print 'waitting for connection'
-        self.device = MonkeyRunner.waitForConnection()
-        self.height = float(self.device.getProperty('display.height'))
-        self.width = float(self.device.getProperty('display.width'))
+        if noDevice:
+            self.device = None
+            self.height = float(1280)
+            self.width = float(800)
+        else:
+            call(['adb', 'devices'])
+            print 'waitting for connection'
+            self.device = MonkeyRunner.waitForConnection()
+            self.height = float(self.device.getProperty('display.height'))
+            self.width = float(self.device.getProperty('display.width'))
 
     def back(self, delay = 1):
         print 'back',
