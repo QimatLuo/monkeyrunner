@@ -81,7 +81,7 @@ class TsumeTsumeLoad:
         if len(pawn) < 100:
             pos = self.util.position(str(x) + str(y))
             i = img.getRawPixelInt(pos['x'], pos['y'])
-            if -10406319 >= i and i >= -10603443:
+            if -10406319 >= i and i >= -10603443 and y < 3:
                 return True
             else:
                 return False
