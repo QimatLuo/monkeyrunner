@@ -104,7 +104,7 @@ class TsumeTsumeLoad:
             if error < 1700:
                 return re.sub('\d', '', key)
 
-    def isAble(self, x, y, name):
+    def isAble(self, x, y, name, cover):
         if x < 0 or x > 4:
             return False
 
@@ -119,18 +119,14 @@ class TsumeTsumeLoad:
         if type(pawn) is bool:
             return str(x) + str(y)
 
-        if '_' in pawn and '_' in name:
-            return False
+        if not cover:
+            if '_' in pawn and '_' in name:
+                return False
+
+            if not '_' in pawn and not '_' in name:
+                return False
 
         return str(x) + str(y)
-
-    def isCorvered(self, target):
-        for xy in self.team:
-            x = int(xy[0])
-            y = int(xy[1])
-            able = self.move(xy, self.board[y][x])
-            if target in able:
-                return True
 
     def linearCheck(self, a, b):
         ax = int(a[0])
@@ -174,8 +170,8 @@ class TsumeTsumeLoad:
                     return False
         return True
 
-    def move(self, xy, name, reverse = False):
-        reverse = -1 if reverse else 1
+    def move(self, xy, name, cover = False):
+        reverse = 1
 
         target = [int(xy[0]), int(xy[1])]
         able = []
@@ -304,7 +300,7 @@ class TsumeTsumeLoad:
         for xy in possible:
             x = target[0] + xy[0] * reverse
             y = target[1] + xy[1] * reverse
-            ans = self.isAble(x, y, name)
+            ans = self.isAble(x, y, name, cover)
             if ans:
                 able.append(ans)
         return able
@@ -409,30 +405,6 @@ class TsumeTsumeLoad:
             if len(''.join(row).replace('0', '')):
                 self.board[4][0].append(row)
 
-    def allCorvered(self, killer, targetAble):
-        teamCorvered = []
-        for xy in self.team:
-            if xy == killer:
-                continue
-            x = int(xy[0])
-            y = int(xy[1])
-            teamCorvered.extend(self.move(xy, self.board[y][x]))
-
-        x = int(killer[0])
-        y = int(killer[1])
-        name = self.board[y][x]
-        kill = self.move(self.osho, name, True)
-        print 'targetAble', targetAble
-        print 'teamCorvered', teamCorvered
-        for xy in kill:
-            print 'kill:', xy
-            killCorvered = self.move(xy, name)
-            print 'killCorvered', killCorvered
-            inter = set(teamCorvered + killCorvered) & set(targetAble)
-            print 'test ANS:', xy, inter
-            if len(inter) == len(targetAble):
-                return xy
-
     def getAns(self, board):
         osho = None
         team = []
@@ -454,9 +426,12 @@ class TsumeTsumeLoad:
                     team.append(obj)
         require = [osho['xy']] + self.move(osho['xy'], osho['name'])
         xor = require
+        print 'require', require
         for obj in team:
-            able = self.move(obj['xy'], obj['name'])
+            able = self.move(obj['xy'], obj['name'], True)
             xor = set(xor) & set(able) ^ set(xor)
+            print obj['name'], able
+            print xor
         if not len(xor):
             return True
 
@@ -479,13 +454,14 @@ class TsumeTsumeLoad:
                     tx = int(txy[0])
                     ty = int(txy[1])
                     board = copy.deepcopy(self.board)
-                    if txy == '04':
+                    if oxy == '04':
                         board[ty][tx] = oname
                     else:
                         board[ty][tx] = self.upgrade(txy, oname)
                     board[oy][ox] = False
+                    print oxy,'to', txy
+                    print board
                     if self.getAns(board):
-                        print oxy,'to', txy
                         for xy in self.team:
                             x = int(xy[0])
                             y = int(xy[1])
@@ -498,58 +474,12 @@ class TsumeTsumeLoad:
                                 self.util.click(oxy)
                                 self.util.click(txy)
                                 self.util.click('upgrade')
-                                return
+                                return True
                         
-        return
-        print self.board
-        print 'target:', self.osho
-        king = [self.osho] + self.move(self.osho, 'osho_')
-        print 'target move:', king
-        hand = self.board[4][0]
-        ans = None
-
-        if type(hand) is bool:
-            array = self.team
-        else:
-            array = ['04']
-
-        for xy in array:
-            x = int(xy[0])
-            y = int(xy[1])
-            name = self.board[y][x]
-            print name, x, y
-
-            print self.allCorvered(xy, king)
-
-            kill = self.move(self.osho, name, True)
-            print 'kill:', kill
-
-            able = self.move(xy, name)
-            if not able:
-                continue
-            print 'able:', able
-            if type(hand) is bool:
-                for xy in able:
-                    name = self.upgrade(xy, name)
-                    if self.osho in self.move(xy, name):
-                        print 'add kill', xy
-                        kill.append(xy)
-
-            if not kill:
-                continue
-            inter = set(kill) & set(king) & set(able)
-            print 'inter:',  inter
-            for ans in list(inter):
-                if (not type(hand) is bool) or self.linearCheck(str(x) + str(y), ans):
-                    self.util.click(str(x) + str(y))
-                    self.util.click(ans)
-                    self.util.click('upgrade')
-                    return True
-
     def upgrade(self, xy, name):
         x = int(xy[0])
         y = int(xy[1])
-        if not self.board[y][x] == True:
+        if not self.board[y][x] == True or name == 'ryuo' or name == 'ryuma':
             return name
 
         if name == 'hisha':
@@ -577,7 +507,7 @@ else:
             self.util.click('pause')
             img.writeToFile('./1.png')
             if self.test(img):
-                self.util.sleep(8)
+                self.util.sleep(6)
             else:
                 img.writeToFile('./2.png')
                 self.util.sleep(1)
