@@ -1,3 +1,4 @@
+import copy
 import os
 import time
 import re
@@ -333,6 +334,8 @@ class TsumeTsumeLoad:
 
         if error == 1:
             call(['cp', '1.png', str(time.time()) + '.png'])
+        else:
+            return True
 
     def pixelParse(self, x, y, sub):
         i = sub.getRawPixelInt(x, y)
@@ -430,9 +433,74 @@ class TsumeTsumeLoad:
             if len(inter) == len(targetAble):
                 return xy
 
+    def getAns(self, board):
+        osho = None
+        team = []
+        empty = []
+
+        for y, row in enumerate(board):
+            for x, name in enumerate(row):
+                obj = {
+                    'x': x,
+                    'y': y,
+                    'xy': str(x) + str(y),
+                    'name': name,
+                }
+                if name == 'osho_':
+                    osho = obj
+                elif type(name) is bool:
+                    empty.append(obj)
+                elif not '_' in name:
+                    team.append(obj)
+        require = [osho['xy']] + self.move(osho['xy'], osho['name'])
+        xor = require
+        for obj in team:
+            able = self.move(obj['xy'], obj['name'])
+            xor = set(xor) & set(able) ^ set(xor)
+        if not len(xor):
+            return True
+
     def test(self, img):
-        self.parsePawn(img)
-        self.util.click('close pause')
+        if self.parsePawn(img):
+            self.util.click('close pause')
+            hand = self.board[4][0]
+            if type(hand) is bool:
+                array = self.team
+            else:
+                array = ['04']
+
+            for oxy in array:
+                ox = int(oxy[0])
+                oy = int(oxy[1])
+                oname = self.board[oy][ox]
+                able = self.move(oxy, oname)
+
+                for txy in able:
+                    tx = int(txy[0])
+                    ty = int(txy[1])
+                    board = copy.deepcopy(self.board)
+                    if txy == '04':
+                        board[ty][tx] = oname
+                    else:
+                        board[ty][tx] = self.upgrade(txy, oname)
+                    board[oy][ox] = False
+                    if self.getAns(board):
+                        print oxy,'to', txy
+                        for xy in self.team:
+                            x = int(xy[0])
+                            y = int(xy[1])
+                            name = self.board[y][x]
+                            if xy == txy:
+                                continue
+                            cover = self.move(xy, name)
+                            print name, cover
+                            if txy in cover:
+                                self.util.click(oxy)
+                                self.util.click(txy)
+                                self.util.click('upgrade')
+                                return
+                        
+        return
         print self.board
         print 'target:', self.osho
         king = [self.osho] + self.move(self.osho, 'osho_')
