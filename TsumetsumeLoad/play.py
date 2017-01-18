@@ -500,9 +500,10 @@ if test:
 else:
     self.open()
     current = self.device.getProperty('am.current.comp.class')
-    start = time.localtime()
+    start = time.time()
     play = 0
     stage = 0
+    lose = 0
     while  current == self.activity:
         print 'takeSnapshot...'
         img = self.device.takeSnapshot()
@@ -526,8 +527,10 @@ else:
         elif self.util.pixel('title', img):
             self.util.click('title ok')
         elif self.util.pixel('lose', img):
+            lose += 1
             self.util.click('lose')
             self.util.click('lose ok')
+            img.writeToFile('./' + time.strftime('%d_%H:%M:%S') + '.png')
         elif self.util.pixel('stage', img):
             stage += 1
             self.util.click('step1', 2)
@@ -538,7 +541,11 @@ else:
             self.util.click('step5', 2)
 
         current = self.device.getProperty('am.current.comp.class')
-    print 'start:', start
-    print 'end:', time.localtime()
-    print 'stage:', stage
-    print 'play:', play
+    end = time.time()
+    print '     end:', time.localtime(end)
+    print '   start:', time.localtime(start)
+    print 'duration:', time.strftime('%H:%M:%S', time.localtime(end - start))
+    print '    play:', play
+    print '   stage:', stage
+    print '    each:', (play / stage)
+    print '    lose:', lose
