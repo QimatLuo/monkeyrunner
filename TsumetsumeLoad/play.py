@@ -260,7 +260,7 @@ class TsumeTsumeLoad:
                 x = target[0]
                 y = target[1] + i
                 pawn = self.isAble(x, y, name)
-                if pawn === 'empty':
+                if pawn == 'empty':
                     able.append(str(x) + str(y))
                     i -= 1
                 else:
@@ -305,21 +305,6 @@ class TsumeTsumeLoad:
                 [0, 2],
                 [0, 3],
                 [2, 0],
-            i = -1
-            pawn = True
-            while pawn:
-                x = target[0]
-                y = target[1] + i
-                pawn = self.isAble(x, y, name)
-                if pawn === 'empty':
-                    able.append(str(x) + str(y))
-                    i -= 1
-                else:
-                    if cover and self.sameTeam(pawn, name):
-                        able.append(str(x) + str(y))
-
-                    pawn = False
-            return able
                 [3, 0],
                 [4, 0],
             ]
