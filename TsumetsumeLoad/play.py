@@ -117,16 +117,13 @@ class TsumeTsumeLoad:
             return False
 
         if type(pawn) is bool:
-            return str(x) + str(y)
+            return 'empty'
 
         if not cover:
-            if '_' in pawn and '_' in name:
+            if self.sameTeam(pawn, name):
                 return False
 
-            if not '_' in pawn and not '_' in name:
-                return False
-
-        return str(x) + str(y)
+        return pawn
 
     def linearCheck(self, a, b):
         ax = int(a[0])
@@ -249,11 +246,20 @@ class TsumeTsumeLoad:
                 [1, 0],
             ]
         elif name == 'kyosha':
-            possible = [
-                [0, -1],
-                [0, -2],
-                [0, -3],
-            ]
+            i = -1
+            pawn = True
+            while pawn:
+                x = target[0]
+                y = target[1] + i
+                pawn = self.isAble(x, y, name)
+                if pawn === 'empty':
+                    able.append(str(x) + str(y))
+                    i -= 1
+                else:
+                    if cover and self.sameTeam(pawn, name):
+                        able.append(str(x) + str(y))
+                    pawn = False
+            return able
         elif name == 'ryuma':
             possible = [
                 [-1, -1],
@@ -291,6 +297,21 @@ class TsumeTsumeLoad:
                 [0, 2],
                 [0, 3],
                 [2, 0],
+            i = -1
+            pawn = True
+            while pawn:
+                x = target[0]
+                y = target[1] + i
+                pawn = self.isAble(x, y, name)
+                if pawn === 'empty':
+                    able.append(str(x) + str(y))
+                    i -= 1
+                else:
+                    if cover and self.sameTeam(pawn, name):
+                        able.append(str(x) + str(y))
+
+                    pawn = False
+            return able
                 [3, 0],
                 [4, 0],
             ]
@@ -300,9 +321,9 @@ class TsumeTsumeLoad:
         for xy in possible:
             x = target[0] + xy[0] * reverse
             y = target[1] + xy[1] * reverse
-            ans = self.isAble(x, y, name, cover)
-            if ans:
-                able.append(ans)
+            pawn = self.isAble(x, y, name, cover)
+            if pawn:
+                able.append(str(x) + str(y))
         return able
 
     def open(self, sleep = 1):
@@ -358,6 +379,15 @@ class TsumeTsumeLoad:
 
         self.team = []
         self.emptySolt = []
+
+    def sameTeam(self, a, b):
+        if not type(a) is str:
+            return False
+
+        if not type(b) is str:
+            return False
+
+        return not (int('_' in a) ^ int('_' in b))
 
     def setBoard(self, img):
         x = 91
