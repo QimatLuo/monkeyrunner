@@ -39,13 +39,21 @@ class TsumeTsumeLoad:
         self.util.positions = {
             'close pause': { 'x': 0.89375, 'y': 0.2953125 },
             'done': { 'x': 0.515, 'y': 0.9375 },
-            'lose': { 'x': 0.325, 'y': 0.58203125 },
+            'friend1': { 'x': 0.25, 'y': 0.27 },
+            'friend2': { 'x': 0.25, 'y': 0.37 },
+            'friend3': { 'x': 0.25, 'y': 0.47 },
+            'friend4': { 'x': 0.25, 'y': 0.57 },
+            'friend5': { 'x': 0.25, 'y': 0.67 },
+            'friend6': { 'x': 0.25, 'y': 0.77 },
+            'lose': { 'x': 0.3025, 'y': 0.5859375 },
             'lose ok': { 'x': 0.5, 'y': 0.58203125 },
             'no': { 'x': 0.3125, 'y': 0.6640625 },
             'pause': { 'x': 0.1, 'y': 0.01 },
+            'quest1': { 'x': 0.25, 'y': 0.3 },
+            'quest2': { 'x': 0.25, 'y': 0.45 },
+            'quest3': { 'x': 0.25, 'y': 0.6 },
             'stage': { 'x': 0.0525, 'y': 0.16 },
             'step1': { 'x': 0.5, 'y': 0.6875 },
-            'step2': { 'x': 0.25, 'y': 0.296875 },
             'step3': { 'x': 0.7125, 'y': 0.69375 },
             'step4': { 'x': 0.5, 'y': 0.8203125 },
             'step5': { 'x': 0.69375, 'y': 0.5625 },
@@ -344,10 +352,13 @@ class TsumeTsumeLoad:
                 elif type(parse) is bool:
                     self.emptySolt.append(str(x) + str(y))
                     continue
-                elif parse == 'osho_':
-                    self.osho = str(x) + str(y)
-                elif '_' not in parse:
-                    self.team.append(str(x) + str(y))
+                else:
+                    if parse == 'osho_':
+                        self.osho = str(x) + str(y)
+                    elif '_' not in parse:
+                        self.team.append(str(x) + str(y))
+                    else:
+                        self.opponent.append(str(x) + str(y))
 
         if error == 1:
             call(['cp', '1.png', str(time.time()) + '.png'])
@@ -378,6 +389,7 @@ class TsumeTsumeLoad:
         ]
 
         self.team = []
+        self.opponent = []
         self.emptySolt = []
 
     def sameTeam(self, a, b):
@@ -564,8 +576,8 @@ else:
         elif self.util.pixel('stage', img):
             stage += 1
             self.util.click('step1', 2)
-            self.util.click('step2', 2)
-            self.util.click('step2', 2)
+            self.util.click('quest3', 2)
+            self.util.click('friend6', 2)
             self.util.click('step3', 2)
             self.util.click('step4', 2)
             self.util.click('step5', 2)
@@ -574,7 +586,7 @@ else:
     end = time.time()
     print '     end:', time.localtime(end)
     print '   start:', time.localtime(start)
-    print 'duration:', time.strftime('%H:%M:%S', time.localtime(end - start))
+    print 'duration:', time.strftime('%H:%M:%S', time.gmtime(end - start))
     print '    play:', play
     print '   stage:', stage
     print '    each:', (play / stage)
