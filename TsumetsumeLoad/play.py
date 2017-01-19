@@ -259,7 +259,7 @@ class TsumeTsumeLoad:
             while pawn:
                 x = target[0]
                 y = target[1] + i
-                pawn = self.isAble(x, y, name)
+                pawn = self.isAble(x, y, name, cover)
                 if pawn == 'empty':
                     able.append(str(x) + str(y))
                     i -= 1
@@ -529,7 +529,7 @@ else:
     current = self.device.getProperty('am.current.comp.class')
     start = time.time()
     play = 0
-    stage = 0
+    stage = 1
     lose = 0
     while  current == self.activity:
         print 'takeSnapshot...'
