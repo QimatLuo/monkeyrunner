@@ -112,7 +112,7 @@ class TsumeTsumeLoad:
             if error < 1700:
                 return re.sub('\d', '', key)
 
-    def isAble(self, x, y, name, cover):
+    def isAble(self, x, y, name, board, cover):
         if x < 0 or x > 4:
             return False
 
@@ -120,7 +120,7 @@ class TsumeTsumeLoad:
             return False
 
         try:
-            pawn = self.board[y][x]
+            pawn = board[y][x]
         except Exception, e:
             return False
 
@@ -175,7 +175,7 @@ class TsumeTsumeLoad:
                     return False
         return True
 
-    def move(self, xy, name, cover = False):
+    def move(self, xy, name, board, cover = False):
         reverse = 1
 
         target = [int(xy[0]), int(xy[1])]
@@ -208,37 +208,156 @@ class TsumeTsumeLoad:
                 [1, 1],
             ]
         elif name == 'hisha':
-            possible = [
-                [-1, 0],
-                [0, -1],
-                [0, 1],
-                [1, 0],
-                [-2, 0],
-                [-3, 0],
-                [-4, 0],
-                [0, -2],
-                [0, -3],
-                [0, 2],
-                [0, 3],
-                [2, 0],
-                [3, 0],
-                [4, 0],
-            ]
+            i = 1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1]
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i += 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+            i = -1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1]
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i -= 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+            i = 1
+            pawn = True
+            while pawn:
+                x = target[0]
+                y = target[1] + i
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i += 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+            i = -1
+            pawn = True
+            while pawn:
+                x = target[0]
+                y = target[1] + i
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i -= 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+            return able
         elif name == 'kakugyo':
-            possible = [
-                [-1, -1],
-                [-1, 1],
-                [1, -1],
-                [1, 1],
-                [-2, -2],
-                [-3, -3],
-                [-2, 2],
-                [-3, 3],
-                [2, -2],
-                [3, -3],
-                [2, 2],
-                [3, 3],
-            ]
+            i = 1
+            j = 1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1] + j
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i += 1
+                        j += 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+            i = -1
+            j = -1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1] + j
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i -= 1
+                        j -= 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+                    pawn = False
+            i = 1
+            j = -1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1] + j
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i += 1
+                        j -= 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+                    pawn = False
+            i = -1
+            j = 1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1] + j
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i -= 1
+                        j += 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+                    pawn = False
+            return able
         elif name == 'keima':
             possible = [
                 [-1, -2],
@@ -259,54 +378,180 @@ class TsumeTsumeLoad:
             while pawn:
                 x = target[0]
                 y = target[1] + i
-                pawn = self.isAble(x, y, name, cover)
-                if pawn == 'empty':
-                    able.append(str(x) + str(y))
-                    i -= 1
-                else:
-                    if cover and self.sameTeam(pawn, name):
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
                         able.append(str(x) + str(y))
-                    pawn = False
+                        i -= 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
             return able
         elif name == 'ryuma':
+            i = 1
+            j = 1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1] + j
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i += 1
+                        j += 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+                    pawn = False
+            i = -1
+            j = -1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1] + j
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i -= 1
+                        j -= 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+                    pawn = False
+            i = 1
+            j = -1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1] + j
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i += 1
+                        j -= 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+                    pawn = False
+            i = -1
+            j = 1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1] + j
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i -= 1
+                        j += 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+                    pawn = False
             possible = [
-                [-1, -1],
                 [-1, 0],
-                [-1, 1],
                 [0, -1],
                 [0, 1],
-                [1, -1],
                 [1, 0],
-                [1, 1],
-                [-2, -2],
-                [-3, -3],
-                [-2, 2],
-                [-3, 3],
-                [2, -2],
-                [3, -3],
-                [2, 2],
-                [3, 3],
             ]
         elif name == 'ryuo':
+            i = 1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1]
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i += 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+            i = -1
+            pawn = True
+            while pawn:
+                x = target[0] + i
+                y = target[1]
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i -= 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+            i = 1
+            pawn = True
+            while pawn:
+                x = target[0]
+                y = target[1] + i
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i += 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
+            i = -1
+            pawn = True
+            while pawn:
+                x = target[0]
+                y = target[1] + i
+                pawn = self.isAble(x, y, name, board, cover)
+                if pawn:
+                    if pawn == 'empty' or pawn == 'osho_':
+                        able.append(str(x) + str(y))
+                        i -= 1
+                    else:
+                        if self.sameTeam(pawn, name):
+                            if cover:
+                                able.append(str(x) + str(y))
+                        else:
+                            able.append(str(x) + str(y))
+                        pawn = False
             possible = [
                 [-1, -1],
-                [-1, 0],
                 [-1, 1],
-                [0, -1],
-                [0, 1],
                 [1, -1],
-                [1, 0],
                 [1, 1],
-                [-2, 0],
-                [-3, 0],
-                [-4, 0],
-                [0, -2],
-                [0, -3],
-                [0, 2],
-                [0, 3],
-                [2, 0],
-                [3, 0],
-                [4, 0],
             ]
         else:
             return False
@@ -314,7 +559,7 @@ class TsumeTsumeLoad:
         for xy in possible:
             x = target[0] + xy[0] * reverse
             y = target[1] + xy[1] * reverse
-            pawn = self.isAble(x, y, name, cover)
+            pawn = self.isAble(x, y, name, board, cover)
             if pawn:
                 able.append(str(x) + str(y))
         return able
@@ -451,11 +696,11 @@ class TsumeTsumeLoad:
                     empty.append(obj)
                 elif not '_' in name:
                     team.append(obj)
-        require = [osho['xy']] + self.move(osho['xy'], osho['name'])
+        require = [osho['xy']] + self.move(osho['xy'], osho['name'], self.board)
         xor = require
         print 'require', require
         for obj in team:
-            able = self.move(obj['xy'], obj['name'], True)
+            able = self.move(obj['xy'], obj['name'], board, True)
             xor = set(xor) & set(able) ^ set(xor)
             print obj['name'], able
             print xor
@@ -475,7 +720,7 @@ class TsumeTsumeLoad:
                 ox = int(oxy[0])
                 oy = int(oxy[1])
                 oname = self.board[oy][ox]
-                able = self.move(oxy, oname)
+                able = self.move(oxy, oname, self.board)
 
                 for txy in able:
                     tx = int(txy[0])
@@ -484,7 +729,7 @@ class TsumeTsumeLoad:
                     if oxy == '04':
                         board[ty][tx] = oname
                     else:
-                        board[ty][tx] = self.upgrade(txy, oname)
+                        board[ty][tx] = self.upgrade(oxy, txy, oname)
                     board[oy][ox] = False
                     print oxy,'to', txy
                     print board
@@ -493,9 +738,9 @@ class TsumeTsumeLoad:
                             x = int(xy[0])
                             y = int(xy[1])
                             name = self.board[y][x]
-                            if xy == txy:
+                            if xy == oxy:
                                 continue
-                            cover = self.move(xy, name)
+                            cover = self.move(xy, name, board, True)
                             print name, cover
                             if txy in cover:
                                 self.util.click(oxy)
@@ -503,10 +748,15 @@ class TsumeTsumeLoad:
                                 self.util.click('upgrade')
                                 return True
                         
-    def upgrade(self, xy, name):
-        x = int(xy[0])
-        y = int(xy[1])
-        if not self.board[y][x] == True or name == 'ryuo' or name == 'ryuma':
+    def upgrade(self, oxy, txy, name):
+        y1 = int(oxy[1])
+        y2 = int(txy[1])
+        able = False
+        for x in range(5):
+            able = able or self.board[y1][x]
+            able = able or self.board[y2][x]
+
+        if not able or name == 'ryuo' or name == 'ryuma':
             return name
 
         if name == 'hisha':
