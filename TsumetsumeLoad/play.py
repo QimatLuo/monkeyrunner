@@ -135,10 +135,11 @@ class TsumeTsumeLoad:
 
     def move(self, xy, name, board, cover = False):
         reverse = 1
+        pname = name
         if '_' in name:
             if not name == 'osho_':
                 reverse = -1
-                name = name[0:-1]
+                pname = name[0:-1]
 
         target = [int(xy[0]), int(xy[1])]
         able = []
@@ -146,7 +147,7 @@ class TsumeTsumeLoad:
         if xy == '04':
             return self.emptySolt
 
-        if name == 'osho_':
+        if pname == 'osho_':
             possible = [
                 [-1, -1],
                 [-1, 0],
@@ -157,11 +158,11 @@ class TsumeTsumeLoad:
                 [1, 0],
                 [1, 1],
             ]
-        elif name == 'fuhyo':
+        elif pname == 'fuhyo':
             possible = [
                 [0, -1],
             ]
-        elif name == 'ginsho':
+        elif pname == 'ginsho':
             possible = [
                 [-1, -1],
                 [-1, 1],
@@ -169,7 +170,7 @@ class TsumeTsumeLoad:
                 [1, -1],
                 [1, 1],
             ]
-        elif name == 'hisha':
+        elif pname == 'hisha':
             i = 1
             pawn = True
             while pawn:
@@ -239,7 +240,7 @@ class TsumeTsumeLoad:
                             able.append(str(x) + str(y))
                         pawn = False
             return able
-        elif name == 'kakugyo':
+        elif pname == 'kakugyo':
             i = 1
             j = 1
             pawn = True
@@ -317,12 +318,12 @@ class TsumeTsumeLoad:
                             able.append(str(x) + str(y))
                         pawn = False
             return able
-        elif name == 'keima':
+        elif pname == 'keima':
             possible = [
                 [-1, -2],
                 [1, -2],
             ]
-        elif name == 'kinsho':
+        elif pname == 'kinsho':
             possible = [
                 [-1, -1],
                 [-1, 0],
@@ -331,7 +332,7 @@ class TsumeTsumeLoad:
                 [1, -1],
                 [1, 0],
             ]
-        elif name == 'kyosha':
+        elif pname == 'kyosha':
             i = -1
             pawn = True
             while pawn:
@@ -350,7 +351,7 @@ class TsumeTsumeLoad:
                             able.append(str(x) + str(y))
                         pawn = False
             return able
-        elif name == 'ryuma':
+        elif pname == 'ryuma':
             i = 1
             j = 1
             pawn = True
@@ -433,7 +434,7 @@ class TsumeTsumeLoad:
                 [0, 1],
                 [1, 0],
             ]
-        elif name == 'ryuo':
+        elif pname == 'ryuo':
             i = 1
             pawn = True
             while pawn:
@@ -710,7 +711,9 @@ class TsumeTsumeLoad:
             x = int(xy[0])
             y = int(xy[1])
             name = self.board[y][x]
-            if txy in self.move(xy, name, self.board):
+            able = self.move(xy, name, self.board)
+            print name, able
+            if txy in able:
                 safe = False
                 newBoard = copy.deepcopy(board)
                 newBoard[y][x] = False
