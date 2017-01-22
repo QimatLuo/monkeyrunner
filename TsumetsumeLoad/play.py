@@ -702,14 +702,20 @@ class TsumeTsumeLoad:
         print 'txy dead should cover osho:'
         tx = int(txy[0])
         ty = int(txy[1])
+        if len(self.opponent) == 0:
+            return True
+
+        safe = True
         for xy in self.opponent:
             x = int(xy[0])
             y = int(xy[1])
             name = self.board[y][x]
             if txy in self.move(xy, name, self.board):
+                safe = False
                 newBoard = copy.deepcopy(board)
                 newBoard[y][x] = False
                 newBoard[ty][tx] = name
+                print newBoard
                 for xy in self.team:
                     x = int(xy[0])
                     y = int(xy[1])
@@ -720,7 +726,8 @@ class TsumeTsumeLoad:
                     print name, cover
                     if (self.osho in cover):
                         return True
-        return True
+        if safe:
+            return True
 
     def test(self, img):
         if not self.parsePawn(img):
