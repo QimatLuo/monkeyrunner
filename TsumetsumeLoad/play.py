@@ -37,6 +37,7 @@ class TsumeTsumeLoad:
         self.activity = 'com.unity3d.player.UnityPlayerActivity'
 
         self.util.positions = {
+            'activity': { 'x': 0.75, 'y': 0.2 },
             'close pause': { 'x': 0.89375, 'y': 0.2953125 },
             'done': { 'x': 0.515, 'y': 0.9375 },
             'friend1': { 'x': 0.25, 'y': 0.27 },
@@ -843,7 +844,7 @@ else:
             img.writeToFile('lose_' + time.strftime('%d_%H:%M:%S') + '.png')
         elif self.util.pixel('stage', img):
             stage += 1
-            self.util.click('step1', 2)
+            self.util.click('activity', 2)
             self.util.click('quest3', 2)
             self.util.click('friend6', 2)
             self.util.click('step3', 2)
