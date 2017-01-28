@@ -53,6 +53,7 @@ class TsumeTsumeLoad:
             'quest1': { 'x': 0.25, 'y': 0.3 },
             'quest2': { 'x': 0.25, 'y': 0.45 },
             'quest3': { 'x': 0.25, 'y': 0.6 },
+            'quest4': { 'x': 0.25, 'y': 0.75 },
             'stage': { 'x': 0.0525, 'y': 0.16 },
             'step1': { 'x': 0.5, 'y': 0.6875 },
             'step3': { 'x': 0.7125, 'y': 0.69375 },
@@ -845,7 +846,7 @@ else:
         elif self.util.pixel('stage', img):
             stage += 1
             self.util.click('activity', 2)
-            self.util.click('quest3', 2)
+            self.util.click('quest4', 2)
             self.util.click('friend6', 2)
             self.util.click('step3', 2)
             self.util.click('step4', 2)
@@ -853,11 +854,11 @@ else:
             combo = 0
 
         current = self.device.getProperty('am.current.comp.class')
-    end = time.time()
-    print '     end:', time.localtime(end)
-    print '   start:', time.localtime(start)
-    print 'duration:', time.strftime('%H:%M:%S', time.gmtime(end - start))
-    print '    play:', play
-    print '   stage:', stage
-    print '    each:', (play / stage)
-    print '    lose:', lose
+        end = time.time()
+        print '     end:', time.localtime(end)
+        print '   start:', time.localtime(start)
+        print 'duration:', time.strftime('%H:%M:%S', time.gmtime(end - start))
+        print '    play:', play
+        print '   stage:', stage
+        print '    each:', (play / stage)
+        print '    lose:', lose
