@@ -40,6 +40,7 @@ class TsumeTsumeLoad:
             'activity': { 'x': 0.75, 'y': 0.2 },
             'close pause': { 'x': 0.89375, 'y': 0.2953125 },
             'done': { 'x': 0.515, 'y': 0.9375 },
+            'disconnect': { 'x': 0.3425, 'y': 0.4890625 },
             'friend1': { 'x': 0.25, 'y': 0.27 },
             'friend2': { 'x': 0.25, 'y': 0.37 },
             'friend3': { 'x': 0.25, 'y': 0.47 },
@@ -67,6 +68,7 @@ class TsumeTsumeLoad:
             'close pause': (-1,255,255,254),
             'done': (-1,255,255,255),
             'done disabled': (-1,127,127,127),
+            'disconnect': (-1,237,0,0),
             'lose': (-1,255,255,255),
             'pause': (-1,211,143,40),
             'stage': (-1,255,255,255),
@@ -830,6 +832,8 @@ else:
             self.reset()
         elif self.util.pixel('close pause', img):
             self.util.click('close pause')
+        elif self.util.pixel('disconnect', img):
+            self.util.click('step5')
         elif self.util.pixel('done', img):
             self.util.click('done', 2)
             self.util.click('done')
