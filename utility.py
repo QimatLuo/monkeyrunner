@@ -12,8 +12,8 @@ class Utility:
             call(['adb', 'devices'])
             print 'waitting for connection'
             self.device = MonkeyRunner.waitForConnection()
-            self.height = float(self.device.getProperty('display.height'))
-            self.width = float(self.device.getProperty('display.width'))
+            self.height = float(self.device.getProperty('display.height')) # 1776
+            self.width = float(self.device.getProperty('display.width')) # 1080
 
     def back(self, delay = 1):
         print 'back',
@@ -24,8 +24,7 @@ class Utility:
         print 'check ' + name
 
         if img == False:
-            print 'take snapshot'
-            img = self.device.takeSnapshot()
+            img = self.screenshot()
 
         self.load[name] = MonkeyRunner.loadImageFromFile('./' + name + '.png','png') 
         sub = img.getSubImage(pos)
@@ -79,25 +78,29 @@ class Utility:
             img = args[2]
 
         pos = self.position(name1)
-        color = self.colors[name2]
+        color = self.mappings[name2]['color']
         x = pos['x']
         y = pos['y']
         print 'pixel %s (%d, %d), %s ' %(name1, x, y, name2),
 
         if img == False:
-            img = self.device.takeSnapshot()
+            img = self.screenshot()
 
         p = img.getRawPixel(x, y)
         print p
         return p == color
     def position(self, name):
-        pos = self.positions[name]
+        pos = self.mappings[name]
         x = self.width * pos['x']
         y = self.height * pos['y']
         return {
             'x': int(x),
             'y': int(y),
         }
+
+    def screenshot(self):
+        print 'screenshot'
+        return self.device.takeSnapshot()
 
     def sleep(self, delay = 1):
         if not delay == 0:
